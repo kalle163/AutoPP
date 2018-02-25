@@ -1,0 +1,114 @@
+#:import Factory kivy.factory.Factory
+<Button>:
+    color: 0,0,0,1
+    font_size: 12
+    bold: True
+   
+
+
+<MyPopup@Popup>:
+    id: mypopup
+    auto_dismiss: False
+    size_hint: None, None
+    size: 800, 640
+    title: "Change Save Path"
+    filechooser: filechooser
+    FloatLayout:        
+        id:floatlayoutpopup
+        Button:
+            id: cancel
+            text: "Cancel"
+            pos_hint: {'x':0.80, 'top':0.1}
+            size_hint: 0.15, 0.08
+            on_release: root.dismiss()
+        Button:
+            id: choosefolder
+            text:"Choose this Folder"
+            pos_hint: {'x':0.63, 'top':0.1}
+            size_hint: 0.15, 0.08
+            on_release: root.ChangeSavePath(filechooser.path,deletecheckbox.state)
+        FileChooserIconView
+            id: filechooser
+            pos_hint: {'x':0.01, 'top':0.99}
+            size_hint: 0.98,0.88
+        Label:
+            id: delete_label
+            text:"delete old folder"
+            pos_hint: {'x':0.40, 'top':0.1}
+            size_hint: 0.2, 0.08
+        CheckBox:
+            id: deletecheckbox
+            state: 'normal'
+            pos_hint: {'x':0.36, 'top':0.1}
+            size_hint: 0.1, 0.08
+<Bildschirm>:
+    canvas:
+        Color:
+            rgba: 1,1,1,1
+        Rectangle:
+            pos:  self.pos
+            size: self.size
+            texture: self.texture
+
+<NumericInput@TextInput>:
+    multilinemode: False
+
+<MyPanel>
+    name: "myPanel"
+    bildschirm: bildschirm
+    wertboden: wertboden
+    FloatLayout:
+        id: floatlayout1
+        Button:
+            id: greybild
+            text: "Height Map"
+            pos_hint: {'x':0.005, 'top':0.99}
+            size_hint: 0.2, 0.1
+            on_press: root.GreyBildpressed()
+        Button:
+            id: rgbbild
+            text: "bild"
+            pos_hint: {'x':0.005, 'top':0.87}
+            size_hint: 0.2, 0.1
+            on_press: root.RGBBildpressed()
+        Button:
+            id: calibrate
+            text: "calibrate"
+            pos_hint: {'x':0.005, 'top':0.75}
+            size_hint: 0.2, 0.1
+            on_press: root.Calibratepressed()
+        Button: 
+            id: changepath
+            text: "Change Path"
+            pos_hint: {'x':0.005, 'top':0.63}
+            size_hint: 0.2,0.1
+            on_release: Factory.MyPopup().open()
+        Bildschirm:
+            id: bildschirm
+            pos_hint: {'x':0.23, 'top':0.99}
+            size_hint: 0.75, 0.97
+        BoxLayout:
+            pos_hint: {'x':0.005, 'top':0.51}
+            size_hint: 0.2, None
+            height:60
+            orientation: 'vertical'    
+            Label:
+                id:label1
+                halign: 'left'
+                text:'Abstand des Bodens'
+                size_hint: 1,0.5           
+            NumericInput:
+                text: "3500"
+                id: wertboden
+                multilinemode: False
+                size_hint: 1,0.5               
+                on_text: root.on_text(*args)
+
+            
+
+            
+        
+               
+
+
+
