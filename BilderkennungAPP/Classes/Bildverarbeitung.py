@@ -22,23 +22,7 @@ class Bildverarbeitung(object):
     
     
     
-    def DepthFrameToPointCloud(self,z,scale=1000):
-        C, R = np.indices(z.shape)
-        R = np.subtract(R, self.CameraParams['cx'])
-        R = np.multiply(R, z)
-        R = np.divide(R, self.CameraParams['fx'] * scale)
-        C = np.subtract(C, self.CameraParams['cy'])
-        C = np.multiply(C, z)
-        C = np.divide(C, self.CameraParams['fy'] * scale)
-        return z.ravel() / scale, R.ravel(), -C.ravel()
-    def AutoFindFloor(self,z):
-        max=float(z.max())
-        minimax = max-40.0
-        s= z<minimax
-        s= s.astype(int)
-        z=np.multiply(s,z)
-        return z
-        
+
 
         
        

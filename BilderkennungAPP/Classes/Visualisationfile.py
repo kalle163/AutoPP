@@ -103,7 +103,7 @@ class MyPanel(Screen):
         #neuenOrdneranlegen(const.rgbFolder)
         #neuenOrdneranlegen(const.rgbCameraIntrinsic)
         #neuenOrdneranlegen(const.irFolder)
-        tp.takePicture()
+        #tp.takePicture()
         #cal.calibrate(isRGB=True)
         #cal.calibrate(isRGB=False)
         #sc.stereocalibrate()
