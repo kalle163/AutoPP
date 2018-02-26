@@ -61,26 +61,32 @@
         id: floatlayout1
         Button:
             id: greybild
-            text: "Height Map"
+            text: "Combined Image"
             pos_hint: {'x':0.005, 'top':0.99}
             size_hint: 0.2, 0.1
             on_press: root.GreyBildpressed()
         Button:
             id: rgbbild
-            text: "bild"
+            text: "Blob at rgb"
             pos_hint: {'x':0.005, 'top':0.87}
             size_hint: 0.2, 0.1
             on_press: root.RGBBildpressed()
         Button:
+            id: heightmap
+            text: "Height Map"
+            pos_hint: {'x':0.005, 'top':0.75}
+            size_hint: 0.2, 0.1
+            on_press: root.HeightMapPressed()        
+        Button:
             id: calibrate
             text: "calibrate"
-            pos_hint: {'x':0.005, 'top':0.75}
+            pos_hint: {'x':0.005, 'top':0.63}
             size_hint: 0.2, 0.1
             on_press: root.Calibratepressed()
         Button: 
             id: changepath
             text: "Change Path"
-            pos_hint: {'x':0.005, 'top':0.63}
+            pos_hint: {'x':0.005, 'top':0.51}
             size_hint: 0.2,0.1
             on_release: Factory.MyPopup().open()
         Bildschirm:
@@ -88,7 +94,7 @@
             pos_hint: {'x':0.23, 'top':0.99}
             size_hint: 0.75, 0.97
         BoxLayout:
-            pos_hint: {'x':0.005, 'top':0.51}
+            pos_hint: {'x':0.005, 'top':0.39}
             size_hint: 0.2, None
             height:60
             orientation: 'vertical'    
