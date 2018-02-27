@@ -88,9 +88,10 @@ class MyPanel(Screen):
     def Calibratepressed(self):
         self.calibrate()
     def HeightMapPressed(self):
-        framemilii,framegray = self.cam.getpicturedepth(3500.0)
-        texturegrey=self.workpic.DetphFrameToKivyPicture(framegray)
+        framemilli,framegrey = self.cam.getpicturedepth(3500.0)
+        texturegrey=self.workpic.DetphFrameToKivyPicture(framegrey)
         self.bildschirm.Changetexture(texturegrey)
+        self.workpic.DetectionOfDepthObjects(framemilli,framegrey)
     def neuenOrdneranlegen(newpath):
         if not os.path.exists(newpath):
             os.makedirs(newpath)
