@@ -95,6 +95,8 @@ class MyPanel(Screen):
     def neuenOrdneranlegen(newpath):
         if not os.path.exists(newpath):
             os.makedirs(newpath)
+    def WriteOutputPressed(self):
+        print("write")
     def calibrate(self):
         if os.path.exists(const.rootfolder):
             #shutil.rmtree(const.rootfolder,ignore_errors=True)
