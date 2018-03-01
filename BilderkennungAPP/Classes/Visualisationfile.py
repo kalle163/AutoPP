@@ -19,6 +19,7 @@ import Kinect.stereoCalibrate as sc
 import Kinect.depthCalibration as dc
 import shutil
 import os
+from XMLIO import *
 from Kinect.KinectV2 import *
 from Blob import *
 
@@ -70,6 +71,8 @@ class MyPanel(Screen):
         self.workpic =Bildverarbeitung()
         self.kinect=KinectV2()
         self.blob = Blob()
+        self.XMLWriter = XMLWriter()
+        self.XMLReader = XMLReader()
         print(self.pos)       
     def GreyBildpressed(self):
         print("pressed")
