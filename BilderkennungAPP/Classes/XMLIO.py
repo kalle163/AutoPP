@@ -1,6 +1,3 @@
-
-
-
 class XMLWriter(object):
 
     listofquader = list()
@@ -56,12 +53,12 @@ class XMLReader(object):
     def readinputfile(self,pfad):
         objectactive=False
         with open(pfad,'r') as file:
-            for line in f:
+            for line in file:
                 if line.find("#")<0 and line.find("<")>=0 and line.find(">")>=0:
-                    if objectactive and line=="</BlobObject>":
+                    if objectactive and (line=="</BlobObject>\n" or line=="</BlobObject>"):
                         objectactive=False
                         self.listofblobobjects.append(blobobject)
-                    elif objectactive and not line=="</BloobObjects>":
+                    elif objectactive and not line=="</BlobObject>\n" and not line=="</BlobObject>":
                         line=line.replace(">","")
                         line=line.replace("<","")
                         line=line.replace("/","")
@@ -73,7 +70,7 @@ class XMLReader(object):
                                 if not ret:
                                     print("No "+subsplit[0]+" defined for "+splits[0])
                         else:
-                           print("No "+splits[0]+" Property defined for BlobObjects. Property musst be "+str(listofproperties))
+                           print("No "+splits[0]+" Property defined for BlobObjects. Property musst be "+str(self.listofproperties))
                     elif not objectactive and line.find("/")<0:
                         line=line.replace(">","")
                         line=line.replace("<","")
@@ -115,25 +112,26 @@ class BlobObject(object):
     "mininertiaratio":0,
     "maxinertiaration":1,
         }
-    listofintprobs=["mingrey","maxgrey"]
-    listofvecprobs=["minrgb","maxrgb","minhsv","maxhsv"]
-    def __init__(sel,name):
+   
+    def __init__(self,name):
         self.name=name
         return
-    def SetProperty(property,value):
+    def SetProperty(self,property,value):
+        listofintprobs=["mingrey","maxgrey"]
+        listofvecprobs=["minrgb","maxrgb","minhsv","maxhsv"]
         if property in self.Properties: 
-            if property in self.listofintprobs:
-                self.Properties[property]=value.atoi()
-            elif property in self.listofvecprobs:
+            if property in listofintprobs:
+                self.Properties[property]=int(value)
+            elif property in listofvecprobs:
                 splits=value.split(",")
-                self.Properties[property]=(splits[0].atoi(),splits[1].atoi(),splits[2].atoi())
+                self.Properties[property]=(int(splits[0]),int(splits[1]),int(splits[2]))
             else:
-                self.Properties[property]=value.atof()            
+                self.Properties[property]=float(value)            
             return True
         else:
             return False
        
-    def GetProperty(property):
+    def GetProperty(self,property):
         return self.Properties[property]
     
 

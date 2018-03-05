@@ -65,41 +65,61 @@ class MyPanel(Screen):
     bg = ListProperty([.27, .64, .25, 1])
     posrec =list([200,100])
     abstandzumboden=3500
+    listofblobobjects=list()
     def __init__(self, **kwargs):
         super(MyPanel, self).__init__(**kwargs)
         self.cam =CameraPyKinectCV()
         self.workpic =Bildverarbeitung()
         self.kinect=KinectV2()
-        self.blob = Blob()
         self.XMLWriter = XMLWriter()
         self.XMLReader = XMLReader()
-        print(self.pos)       
+        self.blob =Blob(self.listofblobobjects)
+        return
     def GreyBildpressed(self):
-        print("pressed")
         combinedframe,worldCoordinates=self.kinect.takePicture()
         texture=self.workpic.DetphFrameToKivyPicture(combinedframe)
         worldCoordinates=worldCoordinates.reshape(const.ir_image_size[0],const.ir_image_size[1],3)
         self.bildschirm.Changetexture(texture)
+        return
     def RGBBildpressed(self):
-        print("pressed2")
         frame=self.cam.getpicturecolor()
-        framewithblob= self.blob.blobdetection(frame) 
+        if self.showcheckbox.state =='down':
+            show=True
+        else:
+            show=False
+        if self.savecheckbox.state == 'down':
+            save=True
+        else:
+            save=False
+        framewithblob= self.blob.blobdetection(frame,show,save) 
         texture=self.workpic.ColorFrameToKivyPicture(framewithblob)
         self.bildschirm.Changetexture(texture)
+        return
     def on_text(self,*args):
-            self.abstandzumboden=int(args[1])
+        self.abstandzumboden=int(args[1])
+        return
     def Calibratepressed(self):
         self.calibrate()
+        return
     def HeightMapPressed(self):
         framemilli,framegrey = self.cam.getpicturedepth(3500.0)
         texturegrey=self.workpic.DetphFrameToKivyPicture(framegrey)
         self.bildschirm.Changetexture(texturegrey)
         self.workpic.DetectionOfDepthObjects(framemilli,framegrey)
+        return
     def neuenOrdneranlegen(newpath):
         if not os.path.exists(newpath):
             os.makedirs(newpath)
+        return
     def WriteOutputPressed(self):
-        print("write")
+        self.XMLWriter.WriteToXML(const.rootfolder+"/Output.xml")
+        return
+    def ReadInputPressed(self):
+        self.XMLReader.readinputfile(const.rootfolder+"/Input.xml")
+        self.listofblobobjects=self.XMLReader.getlistofblobobjects()
+        del self.blob
+        self.blob=Blob(self.listofblobobjects)
+        return
     def calibrate(self):
         if os.path.exists(const.rootfolder):
             #shutil.rmtree(const.rootfolder,ignore_errors=True)
