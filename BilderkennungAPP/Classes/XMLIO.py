@@ -69,8 +69,10 @@ class XMLReader(object):
                                 ret=blobobject.SetProperty(subsplit[0]+splits[0],subsplit[1])
                                 if not ret:
                                     print("No "+subsplit[0]+" defined for "+splits[0])
+                                    break
                         else:
                            print("No "+splits[0]+" Property defined for BlobObjects. Property musst be "+str(self.listofproperties))
+                           break
                     elif not objectactive and line.find("/")<0:
                         line=line.replace(">","")
                         line=line.replace("<","")
@@ -83,13 +85,15 @@ class XMLReader(object):
                                     name=splits[1]
                                 else:
                                     print("The Property "+ splits[0]+" is not defined for BlobObjects it have to be name")
+                                    break
                             blobobject= BlobObject(name) 
                             objectactive=True
 
                         else:
                             print("No Object defined. You have to define a BlobObject ")
-                        
+                            break                    
         return
+
     def getlistofblobobjects(self):
         return self.listofblobobjects
         

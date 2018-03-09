@@ -73,6 +73,8 @@ class MyPanel(Screen):
         self.kinect=KinectV2()
         self.XMLWriter = XMLWriter()
         self.XMLReader = XMLReader()
+        self.XMLReader.readinputfile(const.rootfolder+"/Input.xml")
+        self.listofblobobjects=self.XMLReader.getlistofblobobjects()
         self.blob =Blob(self.listofblobobjects)
         return
     def GreyBildpressed(self):
@@ -81,20 +83,27 @@ class MyPanel(Screen):
         worldCoordinates=worldCoordinates.reshape(const.ir_image_size[0],const.ir_image_size[1],3)
         self.bildschirm.Changetexture(texture)
         return
+
     def RGBBildpressed(self):
         frame=self.cam.getpicturecolor()
-        if self.showcheckbox.state =='down':
-            show=True
+        if len(self.listofblobobjects)>0:
+            if self.showcheckbox.state =='down':
+                show=True
+            else:
+                show=False
+            if self.savecheckbox.state == 'down':
+                save=True
+            else:
+                save=False
+            framewithblob= self.blob.blobdetection(frame,show,save) 
+            texture=self.workpic.ColorFrameToKivyPicture(framewithblob)
         else:
-            show=False
-        if self.savecheckbox.state == 'down':
-            save=True
-        else:
-            save=False
-        framewithblob= self.blob.blobdetection(frame,show,save) 
-        texture=self.workpic.ColorFrameToKivyPicture(framewithblob)
+            print("There are no Blob objects defined. Define at leat one"+ 
+            "Blob Object in input.xml-File and press -Read Input.xml- Button")
+            texture=self.workpic.ColorFrameToKivyPicture(frame)
         self.bildschirm.Changetexture(texture)
         return
+
     def on_text(self,*args):
         self.abstandzumboden=int(args[1])
         return
