@@ -1,3 +1,4 @@
+
 class XMLWriter(object):
 
     listofquader = list()
@@ -68,11 +69,11 @@ class XMLReader(object):
                                 subsplit=splits[i].split("=")
                                 ret=blobobject.SetProperty(subsplit[0]+splits[0],subsplit[1])
                                 if not ret:
-                                    print("No "+subsplit[0]+" defined for "+splits[0])
+                                    print("No "+subsplit[0]+splits[0]+" defined for BlobObjects")
                                     break
                         else:
-                           print("No "+splits[0]+" Property defined for BlobObjects. Property musst be "+str(self.listofproperties))
-                           break
+                            print("No "+splits[0]+" Property defined for BlobObjects. Property musst be "+str(self.listofproperties))
+                            break
                     elif not objectactive and line.find("/")<0:
                         line=line.replace(">","")
                         line=line.replace("<","")
@@ -84,14 +85,15 @@ class XMLReader(object):
                                 if splits[0]=="name":
                                     name=splits[1]
                                 else:
-                                    print("The Property "+ splits[0]+" is not defined for BlobObjects it have to be name")
+                                    print("The Property "+ splits[0]+" is not defined for BlobObjects it has to be name")
                                     break
                             blobobject= BlobObject(name) 
                             objectactive=True
 
                         else:
                             print("No Object defined. You have to define a BlobObject ")
-                            break                    
+                            break   
+  
         return
 
     def getlistofblobobjects(self):
@@ -120,17 +122,35 @@ class BlobObject(object):
     def __init__(self,name):
         self.name=name
         return
+    def errormessage(self,property,value):
+        print(value+" is out of range for "+property)
+        return
     def SetProperty(self,property,value):
-        listofintprobs=["mingrey","maxgrey"]
+        listofintprobs=["mingrey","maxgrey","minarea","maxarea"]
         listofvecprobs=["minrgb","maxrgb","minhsv","maxhsv"]
         if property in self.Properties: 
             if property in listofintprobs:
-                self.Properties[property]=int(value)
+                valueint=int(value)
+                if (property is "maxgrey" and valueint <=255 and valueint > 0) or (property is "mingrey" and valueint <=0 and valueint <255) or (property.find("area")>0 and valueint >=0):
+                    self.Properties[property]=valueint
+                else: 
+                    self.errormessage(property,value)
+                    return False
             elif property in listofvecprobs:
                 splits=value.split(",")
-                self.Properties[property]=(int(splits[0]),int(splits[1]),int(splits[2]))
+                valuevec=(int(splits[0]),int(splits[1]),int(splits[2]))
+                if valuevec[0] <=255 and valuevec[0] >=0 and valuevec[1] <=255 and valuevec[1] >=0 and valuevec[2] <=255 and valuevec[2] >=0:
+                    self.Properties[property]=valuevec
+                else:
+                    self.errormessage(property,value)
+                    return False
             else:
-                self.Properties[property]=float(value)            
+                valuefloat=float(value)
+                if valuefloat >= 0.0 and valuefloat <=1.0: 
+                    self.Properties[property]=valuefloat
+                else:
+                    self.errormessage(property,value)
+                    return False
             return True
         else:
             return False
