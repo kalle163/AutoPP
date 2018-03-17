@@ -22,13 +22,13 @@ class Blob(object):
 
                 # Filter by Circularity
                 params.filterByCircularity = True
-                params.minCircularity = blobobject.Properties["mincircualrity"]
-                params.maxCircularity = blobobject.Porperties["maxcircularity"]
+                params.minCircularity = blobobject.Properties["mincircularity"]
+                params.maxCircularity = blobobject.Properties["maxcircularity"]
                 
                 # Filter by Convexity
                 params.filterByConvexity = True
                 params.minConvexity = blobobject.Properties["minconvexity"]
-                params.maxconvexity = blobobject.Properties["maxconvexity"]
+                params.maxConvexity = blobobject.Properties["maxconvexity"]
     
                 # Filter by Inertia
                 params.filterByInertia = True
@@ -36,7 +36,7 @@ class Blob(object):
                 params.maxInertiaRatio = blobobject.Properties["maxinertiaratio"]
 
 
-                detector = Detector(params,blobobject.Properites["minrgb"],blobobject.Properites["maxrgb"],blobobject.Properites["minhsv"],blobobject.Properites["maxhsv"],blobobject.Properites["mingrey"],blobobject.Properites["maxgrey"])
+                detector = Detector(params,blobobject.Properties["minrgb"],blobobject.Properties["maxrgb"],blobobject.Properties["minhsv"],blobobject.Properties["maxhsv"],blobobject.Properties["mingrey"],blobobject.Properties["maxgrey"])
                 self.listofdetectors.append(detector)
                 
         else:
@@ -112,8 +112,8 @@ class Blob(object):
             maskgrey = cv2.inRange(greyframe,)
             fullmask= cv2.bitwise_and(mask,maskcolor)
             fullmask = cv2.bitwise_and(fullmask,maskgrey)       
-            fullmask =cv2.GaussianBlur(mask,(3,3),0)
-            fullmask = cv2.dilate(mask, None, iterations=1)
+            fullmask = cv2.erode(fullmask, None, iterations=2)
+            fullmask = cv2.dilate(fullmask, None, iterations=4)
             reversemask=255-fullmask
 
             if show:

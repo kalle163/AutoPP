@@ -116,7 +116,7 @@ class BlobObject(object):
     "minconvexity":0,
     "maxconvexity":1,
     "mininertiaratio":0,
-    "maxinertiaration":1,
+    "maxinertiaratio":1,
         }
    
     def __init__(self,name):
@@ -131,7 +131,7 @@ class BlobObject(object):
         if property in self.Properties: 
             if property in listofintprobs:
                 valueint=int(value)
-                if (property is "maxgrey" and valueint <=255 and valueint > 0) or (property is "mingrey" and valueint <=0 and valueint <255) or (property.find("area")>0 and valueint >=0):
+                if (property == "maxgrey" and valueint <=255 and valueint > 0) or (property  == "mingrey" and valueint >=0 and valueint <255) or (property.find("area")>0 and valueint >=0):
                     self.Properties[property]=valueint
                 else: 
                     self.errormessage(property,value)

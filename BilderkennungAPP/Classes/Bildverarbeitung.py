@@ -3,6 +3,8 @@ from kivy.graphics.texture import Texture
 from array import array
 import cv2
 import Kinect.const as const
+from imutils import contours
+from skimage import measure
 
 class Bildverarbeitung(object):
 
@@ -10,7 +12,6 @@ class Bildverarbeitung(object):
     texturecolor = Texture.create(size=(1920,1080),colorfmt='bgr')
     def __init__(self, *args, **kwargs):
         return super(Bildverarbeitung, self).__init__(*args, **kwargs)
-        
     def DetphFrameToKivyPicture(self,depthframe):
         depthframe = depthframe.reshape(424*512*3)
         self.texturedepth.blit_buffer(depthframe,bufferfmt='ubyte',colorfmt='bgr')
@@ -21,23 +22,20 @@ class Bildverarbeitung(object):
         return self.texturecolor 
     def DetectionOfDepthObjects(self,framemilli,framegrey):
         framegrey=framegrey.reshape(424,512,3)
-        cv2.imshow('framegrey',framegrey)
-        cv2.waitKey(0)
-        cv2.imwrite(const.rootfolder+"/framegrayohneblur.jpg",framegrey)
-        framegrey=cv2.GaussianBlur(framegrey,(3,3),0)
-        cv2.imshow('framegrey',framegrey)
-        cv2.waitKey(0)
-        cv2.imwrite(const.rootfolder+"/framegraymitblur.jpg",framegrey)
-        grey=framegrey[:,:,1]
-        cv2.imshow('framegrey',grey)
-        cv2.waitKey(0)
-        framemask=np.zeros((256,424,512),dtype=np.uint8)
+        frametherehold = cv2.threshold(framegray,10,255,cv2.THRESH_TOZERO)
+        frametherehold = cv2.erode(thresh, None, iterations=2)
+        frametherehold = cv2.dilate(thresh, None, iterations=4)
+        labels = measure.label(frametherehold,background=0,connectivity=3)
+        mask = np.zeros(frametherehold.shape,dtype="uint8")
+        for label in np.unique(labels):
+	        if label == 0:
+		        continue
+	        labelMask = np.zeros(thresh.shape, dtype="uint8")
+	        labelMask[labels == label] = 255
+	        numPixels = cv2.countNonZero(labelMask)
+	        if numPixels > 30:
+		        mask = cv2.add(mask, labelMask)
         
-        for i in range(0,256):
-            framemask[i,:,:]=cv2.inRange(grey,i,i)
-        
-        
-      
         print("blabla")
         return 
     
