@@ -66,6 +66,7 @@ class MyPanel(Screen):
     posrec =list([200,100])
     abstandzumboden=3500
     listofblobobjects=list()
+    listofdetecteddepthobjects=list()
     def __init__(self, **kwargs):
         super(MyPanel, self).__init__(**kwargs)
         self.cam =CameraPyKinectCV()
@@ -115,7 +116,7 @@ class MyPanel(Screen):
         framemilli,framegrey,self.g = self.cam.getpicturedepth()
         texturegrey=self.workpic.DetphFrameToKivyPicture(framegrey)
         self.bildschirm.Changetexture(texturegrey)
-        self.workpic.DetectionOfDepthObjects(framemilli,framegrey,self.g)
+        self.listofdetecteddepthobjects = self.workpic.DetectionOfDepthObjects(framemilli,framegrey,self.g)
         return
     def neuenOrdneranlegen(newpath):
         if not os.path.exists(newpath):
