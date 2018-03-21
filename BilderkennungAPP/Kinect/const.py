@@ -16,3 +16,5 @@ indexForBackground = 255
 numberOfDepthFramesForDepthCalibration = 100
 numberOfDistanceForDepthCalibration = 25
 numberofCalibrations = 10
+distancefirstobjecttofloor = 150    # in mm
+distanceobjecttoobject=  100        # in mm 

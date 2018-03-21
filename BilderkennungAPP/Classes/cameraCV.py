@@ -5,6 +5,7 @@ import pykinect2.PyKinectV2 as PKV
 import ctypes
 import _ctypes
 import sys
+import operator
 
 
 class CameraPyKinectCV(object):
@@ -63,30 +64,24 @@ class CameraPyKinectCV(object):
             framedone=False
 
     
-    def getpicturedepth(self,maxabstandzumboden):
+    def getpicturedepth(self):
         framedone=False
         while not framedone:
             if self._kinect.has_new_depth_frame():
                frame = self._kinect.get_last_depth_frame()
-               framedone=True;            
-        max=0.0
-        while max==0.0:
-            if frame.max() > maxabstandzumboden:
-                frame[np.unravel_index(frame.argmax(), frame.shape)]=0
-            else:
-                max=float(frame.max())
+               framedone=True;  
+        unique, counts = np.unique(frame, return_counts=True)
+        anzahl=dict(zip(unique, counts))
+        new_anzahl = {k: v for k, v in anzahl.iteritems() if v >= 10}        
+        maxi=max(new_anzahl, key=np.uint16)
         frame2=frame.astype(float)
-        frame2*=255/max
-        frame2=frame2.astype(int)
-        frame2=np.matrix(frame2)
-        frame2=np.transpose(frame2)
-        multiplicator=np.matrix([1,1,1])
-        frame2=frame2*multiplicator
-        frame2=frame2.A
+        frame2*=255.0/maxi
+        frame2[frame2>255.0] = 255.0
         frame2=frame2.astype(np.uint8)
-        frame2=frame2.reshape(424*512*3)
+        frame2=frame2.reshape(424,512)
         frame=frame.reshape(424,512)
-        return frame,frame2
+        g=maxi/255
+        return frame,frame2,g
             
     
     def getpicturecolor(self):

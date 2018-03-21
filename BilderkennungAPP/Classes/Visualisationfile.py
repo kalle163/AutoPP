@@ -76,6 +76,7 @@ class MyPanel(Screen):
         self.XMLReader.readinputfile(const.rootfolder+"/Input.xml")
         self.listofblobobjects=self.XMLReader.getlistofblobobjects()
         self.blob =Blob(self.listofblobobjects)
+        self.g =0.0
         return
     def GreyBildpressed(self):
         combinedframe,worldCoordinates=self.kinect.takePicture()
@@ -111,10 +112,10 @@ class MyPanel(Screen):
         self.calibrate()
         return
     def HeightMapPressed(self):
-        framemilli,framegrey = self.cam.getpicturedepth(3500.0)
+        framemilli,framegrey,self.g = self.cam.getpicturedepth()
         texturegrey=self.workpic.DetphFrameToKivyPicture(framegrey)
         self.bildschirm.Changetexture(texturegrey)
-        self.workpic.DetectionOfDepthObjects(framemilli,framegrey)
+        self.workpic.DetectionOfDepthObjects(framemilli,framegrey,self.g)
         return
     def neuenOrdneranlegen(newpath):
         if not os.path.exists(newpath):

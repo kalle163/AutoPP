@@ -13,6 +13,8 @@ class Bildverarbeitung(object):
     def __init__(self, *args, **kwargs):
         return super(Bildverarbeitung, self).__init__(*args, **kwargs)
     def DetphFrameToKivyPicture(self,depthframe):
+        depthframe = depthframe.reshape(424*512)
+        depthframe=cv2.cvtColor(depthframe,cv2.COLOR_GRAY2BGR)
         depthframe = depthframe.reshape(424*512*3)
         self.texturedepth.blit_buffer(depthframe,bufferfmt='ubyte',colorfmt='bgr')
         return self.texturedepth
@@ -20,11 +22,13 @@ class Bildverarbeitung(object):
         colorframe = colorframe.reshape(1080*1920*3)
         self.texturecolor.blit_buffer(colorframe,bufferfmt='ubyte',colorfmt='bgr')
         return self.texturecolor 
-    def DetectionOfDepthObjects(self,framemilli,framegrey):
-        framegrey=framegrey.reshape(424,512,3)
-        frametherehold = cv2.threshold(framegray,10,255,cv2.THRESH_TOZERO)
-        frametherehold = cv2.erode(thresh, None, iterations=2)
-        frametherehold = cv2.dilate(thresh, None, iterations=4)
+    def DetectionOfDepthObjects(self,framemilli,framegrey,g):
+        a,b=GetMinDistances(g)
+        frametherehold = np.zeros(framegrey.shape,dtype='uint8')
+        frametherehold = cv2.threshold(framegrey,(255-a),255,cv2.THRESH_TOZERO_INV)
+        frametherehold = frametherehold[1]
+        cv2.imshow('frametherehold',frametherehold)
+        cv2.waitKey(0)
         labels = measure.label(frametherehold,background=0,connectivity=3)
         mask = np.zeros(frametherehold.shape,dtype="uint8")
         for label in np.unique(labels):
@@ -38,6 +42,25 @@ class Bildverarbeitung(object):
         
         print("blabla")
         return 
+
+def GetMinDistances(g):
+     if const.distancefirstobjecttofloor > g:
+         i=1
+         while(const.distancefirstobjecttofloor> g*i):
+             i+=1
+         a=i
+
+     else:
+         a = g
+     if const.distanceobjecttoobject >g:
+         i=1
+         while(const.distanceobjecttoobject> g*i):
+             i+=1
+         b=i
+     else:
+         b= g
+     print(str(a)+"  "+str(b))
+     return a,b 
     
     
     
