@@ -52,9 +52,31 @@ class Bildverarbeitung(object):
         
         for (i, c) in enumerate(cnts):
 	        (x,y,w,h) = cv2.boundingRect(c)
-                heightofobject=framemilli[x:x+w,y:y+h]               
-                self.listofdetectedobjectspixel.append(RectanglePixel(x,y,w,h,heightofobject.mean()))  
-            
+                #heightofobject=framemilli[x:x+w,y:y+h]               
+                #self.listofdetectedobjectspixel.append(RectanglePixel(x,y,w,h,heightofobject.mean()))
+                new_mask[i]=np.zeros(mask.shape,dtype='uint8')
+                new_mask[x:x+w,y:y+h]=mask[x:x+w,y:y+h]
+        i=0
+        for maskf in new_mask:
+            k=0
+            lowervalue=max(mask)
+            while IsHigherValueInArray(maskf,lowervalue) and IsHigherValueInArray(maskf,0):
+                area[i,k] = cv2.threshold(maskf,lowervalue-b,255,cv2.THRESH_TOZERO)
+                maskf=cv2.threshold(mmaskf,lowervalue-b,255,cv2.THRESH_TOZERO_INV)
+                lowervalue=max(mask)
+                k+=1
+            area[i,k]=maskf
+            i+=1
+        new_area = np.zeros(mmask.shape(),dtype='uint8')
+        for k in range(len(area)-1,0):
+            z=GetMeansWithoutZeros(area[k])
+            new_area=cv2.bitwise_or(area[k],new_area)
+            cnts = cv2.findContours(new_area.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+            cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+            cnts = contours.sort_contours(cnts)[0]       
+            for (i, c) in enumerate(cnts):
+	            (x,y,w,h) = cv2.boundingRect(c)
+                    self.listofdetectedobjectspixel.append(RectanglePixel(x,y,w,h,z))
         cv2.imshow('detected',mask)
         cv2.waitKey(0)
 
@@ -62,6 +84,25 @@ class Bildverarbeitung(object):
         return self.listofdetectedobjectspixel
 
 
+    
+class RectanglePixel(object):
+    Properties={
+        "x":0,
+        "y":0,
+        "widthx":0,
+        "widthy":0,
+        "height":0,   #in mm 
+        }
+    def __init__(self,x,y,widthx,widthy,height):
+        self.Properties["x"]=x
+        self.Properties["y"]=y
+        self.Properties["widthx"]=widthx
+        self.Properties["widthy"]=widthy
+        self.Properties["height"]=height
+        return
+
+    
+ 
 def GetMinDistances(g):
      if const.distancefirstobjecttofloor > g:
          i=1
@@ -80,28 +121,30 @@ def GetMinDistances(g):
          b= g
      print(str(a)+"  "+str(b))
      return a,b 
-    
-class RectanglePixel(object):
-    Properties={
-        "x":0,
-        "y":0,
-        "widthx":0,
-        "widthy":0,
-        "height":0,
-        }
-    def __init__(self,x,y,widthx,widthy,height):
-        self.Properties["x"]=x
-        self.Properties["y"]=y
-        self.Properties["widthx"]=widthx
-        self.Properties["widthy"]=widthy
-        self.Properties["height"]=height
-        return
+ 
+def IsHigherValueInArray(A,thr):
+     B=A[A>thr]
+     if len(B)>0:
+         return True
+     else:
+         return False
 
-    
-    
-    
-
-
+def IsLowerValueInArray(A,thr):
+     B=A[A<thr]
+     if len(B)>0:
+         return True
+     else:
+         return False
         
-       
+def IsHigherValueInArray(A,thr):
+     B=A[A>thr]
+     if len(B)>0:
+         return True
+     else:
+         return False       
 
+def GetMeansWithoutZeros(matrix):
+    matrix=matrix.astype(float)
+    matrix[np.where(matrix == 0)] = np.nan
+    mean = int(np.nanmean(matrix))  
+    return mean

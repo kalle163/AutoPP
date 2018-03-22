@@ -64,7 +64,6 @@ class NumericInput(TextInput):
 class MyPanel(Screen):
     bg = ListProperty([.27, .64, .25, 1])
     posrec =list([200,100])
-    abstandzumboden=3500
     listofblobobjects=list()
     listofdetecteddepthobjects=list()
     def __init__(self, **kwargs):
