@@ -30,15 +30,15 @@ class XMLWriter(object):
                 file.write("<Barriers>\n")
                 for i in self.listofquader:
                     file.write("\t<Quader Nr=%s >\n",(i))
-                    file.write("\t\t<Position x=%s y=%s z=%s/>\n",(i.Position["x"].tostring(),i.Position["y"].tostring(),i.Position["z"].tostring()))
-                    file.write("\t\t<Length x=%s y=%s z=%s/>\n",(i.Length["x"].tostring(),i.Length["y"].tostring(),i.Lentgh["z"].tostring()))
+                    file.write("\t\t<Position x=%s y=%s z=%s/>\n",(i.xpos.tostring(),i.ypos.tostring(),i.zpos.tostring()))
+                    file.write("\t\t<Length x=%s y=%s z=%s/>\n",(i.xlen.tostring(),i.ylen.tostring(),i.zlen.tostring()))
                     file.write("\t</Quader>\n")
                 file.write("</Barriers>\n\n")
             if len(self.listofballs)  >0:
                 file.write("<Blob_Objects>\n")
                 for i in self.listofballs:
                     file.write("\t<Ball Nr=%s >\n",(i))
-                    file.write("\t\t<Position x=%s y=%s z=%s/>\n",(i.Position["x"].tostring(),i.Position["y"].tostring(),i.Position["z"].tostring())) 
+                    file.write("\t\t<Position x=%s y=%s z=%s/>\n",(i.xpos.tostring(),i.ypos.tostring(),i.zpos.tostring())) 
                     file.write("\t\t<Radius Value=%s />\n",(i.Radius.tostring()))
                     file.write("\t</Ball>\n")
                 file.write("</Blob_Objects>\n\n")
@@ -58,6 +58,7 @@ class XMLReader(object):
                 if line.find("#")<0 and line.find("<")>=0 and line.find(">")>=0:
                     if objectactive and (line=="</BlobObject>\n" or line=="</BlobObject>"):
                         objectactive=False
+                        blobobject.SaveValues()
                         self.listofblobobjects.append(blobobject)
                     elif objectactive and not line=="</BlobObject>\n" and not line=="</BlobObject>":
                         line=line.replace(">","")
@@ -102,7 +103,7 @@ class XMLReader(object):
 
 class BlobObject(object):
     name = "object"
-    Properties = {
+    __Properties = {
     "minrgb":(0,0,0),
     "maxrgb":(255,255,255),
     "minhsv":(0,0,0),
@@ -128,11 +129,11 @@ class BlobObject(object):
     def SetProperty(self,property,value):
         listofintprobs=["mingrey","maxgrey","minarea","maxarea"]
         listofvecprobs=["minrgb","maxrgb","minhsv","maxhsv"]
-        if property in self.Properties: 
+        if property in self.__Properties: 
             if property in listofintprobs:
                 valueint=int(value)
                 if (property == "maxgrey" and valueint <=255 and valueint > 0) or (property  == "mingrey" and valueint >=0 and valueint <255) or (property.find("area")>0 and valueint >=0):
-                    self.Properties[property]=valueint
+                    self.__Properties[property]=valueint
                 else: 
                     self.errormessage(property,value)
                     return False
@@ -140,59 +141,56 @@ class BlobObject(object):
                 splits=value.split(",")
                 valuevec=(int(splits[0]),int(splits[1]),int(splits[2]))
                 if valuevec[0] <=255 and valuevec[0] >=0 and valuevec[1] <=255 and valuevec[1] >=0 and valuevec[2] <=255 and valuevec[2] >=0:
-                    self.Properties[property]=valuevec
+                    self.__Properties[property]=valuevec
                 else:
                     self.errormessage(property,value)
                     return False
             else:
                 valuefloat=float(value)
                 if valuefloat >= 0.0 and valuefloat <=1.0: 
-                    self.Properties[property]=valuefloat
+                    self.__Properties[property]=valuefloat
                 else:
                     self.errormessage(property,value)
                     return False
             return True
         else:
             return False
-       
-    def GetProperty(self,property):
-        return self.Properties[property]
+
+    def SaveValues(self):
+        self.minrgb= self.__Properties["minrgb"]
+        self.maxrgb= self.__Properties["maxrgb"]
+        self.minhsv= self.__Properties["minhsv"]
+        self.maxhsv= self.__Properties["maxhsv"]
+        self.mingrey= self.__Properties["mingrey"]
+        self.maxgrey= self.__Properties["maxgrey"]
+        self.mincircularity= self.__Properties["mincircularity"]
+        self.maxcircularity= self.__Properties["maxcircularity"]
+        self.maxarea= self.__Properties["maxarea"]
+        self.minarea= self.__Properties["minarea"]
+        self.minconvexity= self.__Properties["minconvexity"]
+        self.maxconvexity= self.__Properties["maxconvexity"]
+        self.mininertiaratio= self.__Properties["mininertiaratio"]
+        self.maxinertiaratio= self.__Properties["maxinertiaratio"]
+        
     
 
 class Quader(object):
     
-    Position ={
-    "x":0,
-    "y":0,
-    "z":0,
-    }
-    Length ={
-    "x":0,
-    "y":0,
-    "z":0,       
-    }
-
     def __init__(self,xpos,ypos,zpos,xlen,ylen,zlen):
-        self.Position["x"]=xpos
-        self.Position["y"]=ypos
-        self.Position["z"]=zpos
-        self.Length["x"]=xlen
-        self.Length["y"]=ylen
-        self.Length["z"]=zlen
+        self.xpos=xpos
+        self.ypos=ypos
+        self.zpos=zpos
+        self.xlen=xlen
+        self.ylen=ylen
+        self.zlen=zlen
         return
 
 class Ball(object):
-    Position ={
-    "x":0,
-    "y":0,
-    "z":0,
-    }
-    Radius = 0
 
     def __init__(self,xpos,ypos,zpos,rad):
-        self.Position["x"]=xpos
-        self.Position["y"]=ypos
-        self.Position["z"]=zpos
+        self.xpos=xpos
+        self.ypos=ypos
+        self.zpos=zpos
         self.Radius =rad
         return
 

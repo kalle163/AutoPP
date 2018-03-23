@@ -16,27 +16,27 @@ class Blob(object):
 
                 # Filter by Area.
                 params.filterByArea = True
-                params.minArea = blobobject.Properties["minarea"]
-                if blobobject.Properties["maxarea"]>=0:
-                    params.maxArea =blobobject.Properties["maxarea"]
+                params.minArea = blobobject.minarea
+                if blobobject.maxarea>=0:
+                    params.maxArea =blobobject.maxarea
 
                 # Filter by Circularity
                 params.filterByCircularity = True
-                params.minCircularity = blobobject.Properties["mincircularity"]
-                params.maxCircularity = blobobject.Properties["maxcircularity"]
+                params.minCircularity = blobobject.mincircularity
+                params.maxCircularity = blobobject.maxcircularity
                 
                 # Filter by Convexity
                 params.filterByConvexity = True
-                params.minConvexity = blobobject.Properties["minconvexity"]
-                params.maxConvexity = blobobject.Properties["maxconvexity"]
+                params.minConvexity = blobobject.minconvexity
+                params.maxConvexity = blobobject.maxconvexity
     
                 # Filter by Inertia
                 params.filterByInertia = True
-                params.minInertiaRatio = blobobject.Properties["mininertiaratio"]
-                params.maxInertiaRatio = blobobject.Properties["maxinertiaratio"]
+                params.minInertiaRatio = blobobject.mininertiaratio
+                params.maxInertiaRatio = blobobject.maxinertiaratio
 
 
-                detector = Detector(params,blobobject.Properties["minrgb"],blobobject.Properties["maxrgb"],blobobject.Properties["minhsv"],blobobject.Properties["maxhsv"],blobobject.Properties["mingrey"],blobobject.Properties["maxgrey"])
+                detector = Detector(params,blobobject.minrgb,blobobject.maxrgb,blobobject.minhsv,blobobject.maxhsv,blobobject.mingrey,blobobject.maxgrey)
                 self.listofdetectors.append(detector)
                 
         else:
