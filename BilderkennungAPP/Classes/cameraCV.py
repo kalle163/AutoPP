@@ -81,7 +81,7 @@ class CameraPyKinectCV(object):
         frame2=frame2.reshape(424,512)
         frame=frame.reshape(424,512)
         g=maxi/255
-        return frame,frame2,g
+        return frame,frame2,g,maxi
             
     
     def getpicturecolor(self):

@@ -28,19 +28,23 @@ class XMLWriter(object):
             file= open(pfad,'w')
             if len(self.listofquader) >0:
                 file.write("<Barriers>\n")
+                k=1
                 for i in self.listofquader:
-                    file.write("\t<Quader Nr=%s >\n",(i))
-                    file.write("\t\t<Position x=%s y=%s z=%s/>\n",(i.xpos.tostring(),i.ypos.tostring(),i.zpos.tostring()))
-                    file.write("\t\t<Length x=%s y=%s z=%s/>\n",(i.xlen.tostring(),i.ylen.tostring(),i.zlen.tostring()))
+                    file.write("\t<Quader Nr=%s >\n" % (str(k)))
+                    file.write("\t\t<Position x=%s y=%s z=%s/>\n" % (str(i.xpos),str(i.ypos),str(i.zpos)))
+                    file.write("\t\t<Length x=%s y=%s z=%s/>\n" % (str(i.xlen),str(i.ylen),str(i.zlen)))
                     file.write("\t</Quader>\n")
+                    k+=1
                 file.write("</Barriers>\n\n")
             if len(self.listofballs)  >0:
                 file.write("<Blob_Objects>\n")
+                k=1
                 for i in self.listofballs:
-                    file.write("\t<Ball Nr=%s >\n",(i))
-                    file.write("\t\t<Position x=%s y=%s z=%s/>\n",(i.xpos.tostring(),i.ypos.tostring(),i.zpos.tostring())) 
-                    file.write("\t\t<Radius Value=%s />\n",(i.Radius.tostring()))
+                    file.write("\t<Ball Nr=%s >\n" % (k))
+                    file.write("\t\t<Position x=%s y=%s z=%s/>\n" % (str(i.xpos),str(i.ypos),str(i.zpos))) 
+                    file.write("\t\t<Radius Value=%s />\n" % (str(i.Radius)))
                     file.write("\t</Ball>\n")
+                    k+=1
                 file.write("</Blob_Objects>\n\n")
             file.close()
             return

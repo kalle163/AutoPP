@@ -22,6 +22,7 @@ import os
 from XMLIO import *
 from Kinect.KinectV2 import *
 from Blob import *
+from _2DImageTo3DCoords import *
 
 def ChangeSavePathInConst(path,deletestate):
     if deletestate == 'down':
@@ -39,6 +40,10 @@ def ChangeSavePathInConst(path,deletestate):
     const.distanceErrorFunction= resultpath
     const.pictureFolder= path+"/KincetData/"
 
+def neuenOrdneranlegen(newpath):
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+    return
 
 
 class MyPopup(Popup):
@@ -67,16 +72,19 @@ class MyPanel(Screen):
     listofblobobjects=list()
     listofdetecteddepthobjects=list()
     def __init__(self, **kwargs):
+        if not os.path.exists(const.rgbCameraIntrinsic):
+            self.calibrate()
         super(MyPanel, self).__init__(**kwargs)
         self.cam =CameraPyKinectCV()
         self.workpic =Bildverarbeitung()
-        self.kinect=KinectV2()
+        #self.kinect=KinectV2()
         self.XMLWriter = XMLWriter()
         self.XMLReader = XMLReader()
-        self.XMLReader.readinputfile(const.rootfolder+"/Input.xml")
-        self.listofblobobjects=self.XMLReader.getlistofblobobjects()
-        self.blob =Blob(self.listofblobobjects)
-        self.g =0.0
+        framemilli,framegrey,self.g,maxi = self.cam.getpicturedepth()
+        #self.XMLReader.readinputfile(const.rootfolder+"/Input.xml")
+        #self.listofblobobjects=self.XMLReader.getlistofblobobjects()
+        #self.blob =Blob(self.listofblobobjects)
+        self.imageto3D = C2DImageTo3DCoords(maxi)     
         return
     def GreyBildpressed(self):
         combinedframe,worldCoordinates=self.kinect.takePicture()
@@ -112,14 +120,12 @@ class MyPanel(Screen):
         self.calibrate()
         return
     def HeightMapPressed(self):
-        framemilli,framegrey,self.g = self.cam.getpicturedepth()
+        framemilli,framegrey,self.g,maxi = self.cam.getpicturedepth()
+        del maxi
         texturegrey=self.workpic.DetphFrameToKivyPicture(framegrey)
         self.bildschirm.Changetexture(texturegrey)
         self.listofdetecteddepthobjects = self.workpic.DetectionOfDepthObjects(framemilli,framegrey,self.g)
-        return
-    def neuenOrdneranlegen(newpath):
-        if not os.path.exists(newpath):
-            os.makedirs(newpath)
+        self.imageto3D.CalcualteCoodinatesOfQuaders(self.listofdetecteddepthobjects,self.XMLWriter)
         return
     def WriteOutputPressed(self):
         self.XMLWriter.WriteToXML(const.rootfolder+"/Output.xml")
@@ -132,19 +138,19 @@ class MyPanel(Screen):
         return
     def calibrate(self):
         if os.path.exists(const.rootfolder):
-            #shutil.rmtree(const.rootfolder,ignore_errors=True)
+            shutil.rmtree(const.rootfolder,ignore_errors=True)
             pass
 
-        #neuenOrdneranlegen(const.depthFolder)
-        #neuenOrdneranlegen(const.rgbFolder)
-        #neuenOrdneranlegen(const.rgbCameraIntrinsic)
-        #neuenOrdneranlegen(const.irFolder)
-        #tp.takePicture()
-        #cal.calibrate(isRGB=True)
-        #cal.calibrate(isRGB=False)
-        #sc.stereocalibrate()
-        #dc.DepthCalibration()        
-
+        neuenOrdneranlegen(const.depthFolder)
+        neuenOrdneranlegen(const.rgbFolder)
+        neuenOrdneranlegen(const.rgbCameraIntrinsic)
+        neuenOrdneranlegen(const.irFolder)
+        tp.takePicture()
+        cal.calibrate(isRGB=True)
+        cal.calibrate(isRGB=False)
+        sc.stereocalibrate()
+        dc.DepthCalibration()        
+       
   
 
 class MyPanelApp(App):

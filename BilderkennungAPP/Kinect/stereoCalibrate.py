@@ -10,8 +10,8 @@ from glob import glob
 def getImagePoints(imageNames):
     img_points = []
     for fileName in imageNames:
-        file = shelve.open(os.path.splitext(fileName)[0])
-        img_points.append(file['img_points'])
+        filebla = shelve.open(fileName)
+        img_points.append(filebla['img_points'])
     return img_points
 
 def stereocalibrate():

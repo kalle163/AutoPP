@@ -16,7 +16,7 @@ class RectanglePixel(object):
         self.widthx=widthx
         self.widthy=widthy
         self.height=height
-        return
+        return 
 
 
 class Bildverarbeitung(object):
@@ -45,8 +45,8 @@ class Bildverarbeitung(object):
         frametherehold= cv2.medianBlur(frametherehold,5)
         frametherehold = cv2.erode(frametherehold, None, iterations=2)
         frametherehold = cv2.dilate(frametherehold, None, iterations=4)
-        #cv2.imshow('frametherehold',frametherehold)
-        #cv2.waitKey(0)
+        cv2.imshow('frametherehold',frametherehold)
+        cv2.waitKey(0)
         #cv2.imwrite(const.rootfolder+"/thereholdframe.jpg",frametherehold)
         mask=frametherehold.copy()       
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
@@ -68,9 +68,13 @@ class Bildverarbeitung(object):
             while IsLowerValueInArray(maskf,lowervalue-b):
                 m=cv2.threshold(maskf,lowervalue-b,255,cv2.THRESH_TOZERO)
                 m=m[1]
+                cv2.imshow('newmask',m)
+                cv2.waitKey(0)
                 areawh.append(m)
                 maskf=cv2.threshold(maskf,lowervalue-b,255,cv2.THRESH_TOZERO_INV)
                 maskf=maskf[1]
+                cv2.imshow('newmask',maskf)
+                cv2.waitKey(0)
                 numPixels = cv2.countNonZero(maskf)
                 if numPixels<20:
                      break
@@ -90,6 +94,8 @@ class Bildverarbeitung(object):
 	                (x,y,w,h) = cv2.boundingRect(c)
                         z=GetMeansWithoutZeros(framemilli[y:y+h,x:x+w])
                 new_area=cv2.bitwise_or(areaf[k],new_area)
+                cv2.imshow('newarea',new_area)
+                cv2.waitKey(0)
                 cnts = cv2.findContours(new_area.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
                 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
                 cnts = contours.sort_contours(cnts)[0]       
