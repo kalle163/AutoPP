@@ -17,5 +17,5 @@ numberOfDepthFramesForDepthCalibration = 100
 numberOfDistanceForDepthCalibration = 25
 numberofCalibrations = 10
 distancefirstobjecttofloor = 270    # in mm
-distanceobjecttoobject=  35        # in mm 
+distanceobjecttoobject=  50        # in mm 
 NoDetectionArea = [[0,280,512,424-280],[330,120,512-330,424-120],[0,0,120,424]]  # for depth detection in pixel [x,y,width,height] [0,0] = top left corner

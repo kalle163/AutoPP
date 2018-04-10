@@ -66,11 +66,23 @@ def takePicture():
             print("Dont found chessboard in ir frame")
 
     cv2.destroyAllWindows()
+    print("measure distance to ground at middele Coordinate")
+    while(cv2.waitKey(1) != 27):#wait ESC press
+        frame = ir_frame_to_jpg(kinect.get_last_infrared_frame())
+        frame[212,256,2] =255
+        cv2.imshow('IR',frame)
 
-
-
-
-
+        #save data
+    cv2.imshow('IR',redAlert)
+    cv2.waitKey(1)
+    DepthFrameMiddle = np.zeros((10,1),dtype="uint8")
+    i=0
+    while(i<const.numberofCalibrations):
+        DepthFrame = kinect.get_last_depth_frame()
+        DepthFrameMiddle[i]=DepthFrame[212,256]
+    DistancetoGround=np.mean(DepthFrameMiddel)
+    np.save(const.rootfolder+"/distancetoground.npy",DistancetoGround)
+    cv2.destroyAllWindows()
 
 
 

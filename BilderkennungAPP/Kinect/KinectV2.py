@@ -54,9 +54,7 @@ class KinectV2(object):
 
         #compensate  lens distortion
         colorFrame = cv2.undistort(colorFrame,self.rgbCamera['camera_matrix'], self.rgbCamera['dist_coefs'])
-        depthFrame = cv2.undistort(depthFrame,self.irCamera['camera_matrix'], self.irCamera['dist_coefs'])
-
-        #combine depth, RGB and bodyIndexFrame
+     #combine depth, RGB and bodyIndexFrame
         combinedImage,worldCoordinates = self.__align__(colorFrame,depthFrame)
 
         #self.__saveData__(colorFrame, depthFrame.reshape(const.ir_image_size), combinedImage)
