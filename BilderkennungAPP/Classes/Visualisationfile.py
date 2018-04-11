@@ -77,14 +77,13 @@ class MyPanel(Screen):
         super(MyPanel, self).__init__(**kwargs)
         self.cam =CameraPyKinectCV()
         self.workpic =Bildverarbeitung()
-        #self.kinect=KinectV2()
         self.XMLWriter = XMLWriter()
         self.XMLReader = XMLReader()
-        framemilli,framegrey,self.g,maxi = self.cam.getpicturedepth()
+        framemilli,framegrey,self.g = self.cam.getpicturedepth()
         #self.XMLReader.readinputfile(const.rootfolder+"/Input.xml")
         #self.listofblobobjects=self.XMLReader.getlistofblobobjects()
         #self.blob =Blob(self.listofblobobjects)
-        self.imageto3D = C2DImageTo3DCoords(maxi)     
+        self.imageto3D = C2DImageTo3DCoords()     
         return
     def GreyBildpressed(self):
         combinedframe,worldCoordinates=self.kinect.takePicture()
@@ -117,11 +116,15 @@ class MyPanel(Screen):
         self.abstandzumboden=int(args[1])
         return
     def Calibratepressed(self):
-        self.calibrate()
+        frameshit,frame,g=self.cam.getpicturedepth()
+        cv2.imwrite(const.rootfolder+"/depth.jpg",frame)
+        cv2.imwrite(const.rootfolder+"/ir.jpg",self.cam.getpictureir())
+
+        
+        #self.calibrate()
         return
     def HeightMapPressed(self):
-        framemilli,framegrey,self.g,maxi = self.cam.getpicturedepth()
-        del maxi
+        framemilli,framegrey,self.g = self.cam.getpicturedepth()
         texturegrey=self.workpic.DetphFrameToKivyPicture(framegrey)
         self.bildschirm.Changetexture(texturegrey)
         self.listofdetecteddepthobjects = self.workpic.DetectionOfDepthObjects(framemilli,framegrey,self.g)
@@ -138,14 +141,14 @@ class MyPanel(Screen):
         return
     def calibrate(self):
         if os.path.exists(const.rootfolder):
-            shutil.rmtree(const.rootfolder,ignore_errors=True)
+            #shutil.rmtree(const.rootfolder,ignore_errors=True)
             pass
 
-        neuenOrdneranlegen(const.depthFolder)
-        neuenOrdneranlegen(const.rgbFolder)
+        #neuenOrdneranlegen(const.depthFolder)
+        #neuenOrdneranlegen(const.rgbFolder)
         neuenOrdneranlegen(const.rgbCameraIntrinsic)
-        neuenOrdneranlegen(const.irFolder)
-        tp.takePicture()
+        #neuenOrdneranlegen(const.irFolder)
+        #tp.takePicture()
         cal.calibrate(isRGB=True)
         cal.calibrate(isRGB=False)
         sc.stereocalibrate()

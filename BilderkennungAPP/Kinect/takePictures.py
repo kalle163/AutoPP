@@ -75,12 +75,14 @@ def takePicture():
         #save data
     cv2.imshow('IR',redAlert)
     cv2.waitKey(1)
-    DepthFrameMiddle = np.zeros((10,1),dtype="uint8")
+    DepthFrameMiddle = np.zeros((const.numberofCalibrations),dtype="uint16")
     i=0
     while(i<const.numberofCalibrations):
         DepthFrame = kinect.get_last_depth_frame()
+        DepthFrame = DepthFrame.reshape(424,512)
         DepthFrameMiddle[i]=DepthFrame[212,256]
-    DistancetoGround=np.mean(DepthFrameMiddel)
+        i+=1
+    DistancetoGround=np.mean(DepthFrameMiddle)
     np.save(const.rootfolder+"/distancetoground.npy",DistancetoGround)
     cv2.destroyAllWindows()
 

@@ -36,6 +36,7 @@ class Bildverarbeitung(object):
         self.texturecolor.blit_buffer(colorframe,bufferfmt='ubyte',colorfmt='bgr')
         return self.texturecolor 
     def DetectionOfDepthObjects(self,framemilli,framegrey,g):
+        framemilli= UndistortDethFrameMilli(framemilli)
         show = True   #Set to False to Hide Pictures
         a,b=GetMinDistances(g)
         frametherehold = np.zeros(framegrey.shape,dtype='uint8')
@@ -162,3 +163,12 @@ def GetMeansWithoutZeros(matrix):
     matrix[np.where(matrix == 0)] = np.nan
     mean = int(np.nanmean(matrix))  
     return mean
+
+def UndistortDethFrameMilli(frame):
+    irCamera = shelve.open(const.irCameraIntrinsic+"/IR")
+    newDepthCameraMatrix, roi=cv2.getOptimalNewCameraMatrix(irCamera['camera_matrix'],irCamera['dist_coefs'],const.ir_image_size[::-1],1,const.ir_image_size[::-1])
+    mapx,mapy = cv2.initUndistortRectifyMap(irCamera['camera_matrix'],irCamera['dist_coefs'],None,newDepthCameraMatrix,const.ir_image_size[::-1],5)
+    del roi
+    frame = cv2.remap(frame,mapx,mapy,cv2.INTER_CUBIC) #undistort frame
+    irCamera.Close()
+    return frame

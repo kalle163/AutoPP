@@ -11,7 +11,7 @@ import operator
 class CameraPyKinectCV(object):
     
     def __init__(self):
-        self._kinect =  PKR.PyKinectRuntime(PKV.FrameSourceTypes_Color | PKV.FrameSourceTypes_Depth | PKV.FrameSourceTypes_BodyIndex)
+        self._kinect =  PKR.PyKinectRuntime(PKV.FrameSourceTypes_Color | PKV.FrameSourceTypes_Depth | PKV.FrameSourceTypes_BodyIndex |  PKV.FrameSourceTypes_Infrared)
         
 
     def showpicturecolor(self):
@@ -81,7 +81,7 @@ class CameraPyKinectCV(object):
         frame2=frame2.reshape(424,512)
         frame=frame.reshape(424,512)
         g=maxi/255
-        return frame,frame2,g,maxi
+        return frame,frame2,g
             
     
     def getpicturecolor(self):
@@ -94,4 +94,13 @@ class CameraPyKinectCV(object):
         frame=frame.reshape(1080,1920,4)
         return frame
 
-           
+        
+    def getpictureir(self):
+        framedone=False
+        while not framedone:
+            if self._kinect.has_new_infrared_frame():
+                frame = self._kinect.get_last_infrared_frame()  
+                framedone=True
+        frame=frame.reshape(424,512)
+        return frame
+       
