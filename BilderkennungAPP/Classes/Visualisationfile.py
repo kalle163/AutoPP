@@ -23,6 +23,7 @@ from XMLIO import *
 from Kinect.KinectV2 import *
 from Blob import *
 from _2DImageTo3DCoords import *
+from Simple2DImageto3DCoords import *
 
 def ChangeSavePathInConst(path,deletestate):
     if deletestate == 'down':
@@ -83,7 +84,7 @@ class MyPanel(Screen):
         #self.XMLReader.readinputfile(const.rootfolder+"/Input.xml")
         #self.listofblobobjects=self.XMLReader.getlistofblobobjects()
         #self.blob =Blob(self.listofblobobjects)
-        self.imageto3D = C2DImageTo3DCoords()     
+        self.imageto3D = Simple2DImageto3DCoords()     
         return
     def GreyBildpressed(self):
         combinedframe,worldCoordinates=self.kinect.takePicture()
@@ -115,20 +116,15 @@ class MyPanel(Screen):
     def on_text(self,*args):
         self.abstandzumboden=int(args[1])
         return
-    def Calibratepressed(self):
-        frameshit,frame,g=self.cam.getpicturedepth()
-        cv2.imwrite(const.rootfolder+"/depth.jpg",frame)
-        cv2.imwrite(const.rootfolder+"/ir.jpg",self.cam.getpictureir())
-
-        
-        #self.calibrate()
+    def Calibratepressed(self):       
+        self.calibrate()
         return
     def HeightMapPressed(self):
         framemilli,framegrey,self.g = self.cam.getpicturedepth()
         texturegrey=self.workpic.DetphFrameToKivyPicture(framegrey)
         self.bildschirm.Changetexture(texturegrey)
         self.listofdetecteddepthobjects = self.workpic.DetectionOfDepthObjects(framemilli,framegrey,self.g)
-        self.imageto3D.CalcualteCoodinatesOfQuaders(self.listofdetecteddepthobjects,self.XMLWriter)
+        self.imageto3D.ConvertPixQuadertoCoordQuader(self.listofdetecteddepthobjects,self.XMLWriter)
         return
     def WriteOutputPressed(self):
         self.XMLWriter.WriteToXML(const.rootfolder+"/Output.xml")

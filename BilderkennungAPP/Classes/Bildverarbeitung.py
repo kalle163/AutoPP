@@ -6,6 +6,7 @@ import Kinect.const as const
 from imutils import contours
 from skimage import measure
 import imutils
+import shelve
 
 
 class RectanglePixel(object):
@@ -36,7 +37,7 @@ class Bildverarbeitung(object):
         self.texturecolor.blit_buffer(colorframe,bufferfmt='ubyte',colorfmt='bgr')
         return self.texturecolor 
     def DetectionOfDepthObjects(self,framemilli,framegrey,g):
-        framemilli= UndistortDethFrameMilli(framemilli)
+        #framemilli= UndistortDethFrameMilli(framemilli)
         show = True   #Set to False to Hide Pictures
         a,b=GetMinDistances(g)
         frametherehold = np.zeros(framegrey.shape,dtype='uint8')
@@ -160,8 +161,11 @@ def IsHigherValueInArray(A,thr):
 
 def GetMeansWithoutZeros(matrix):
     matrix=matrix.astype(float)
-    matrix[np.where(matrix == 0)] = np.nan
-    mean = int(np.nanmean(matrix))  
+    if np.count_nonzero(matrix)>0:
+        matrix[np.where(matrix == 0)] = np.nan
+        mean = int(np.nanmean(matrix))
+    else:
+        mean =0
     return mean
 
 def UndistortDethFrameMilli(frame):
@@ -170,5 +174,4 @@ def UndistortDethFrameMilli(frame):
     mapx,mapy = cv2.initUndistortRectifyMap(irCamera['camera_matrix'],irCamera['dist_coefs'],None,newDepthCameraMatrix,const.ir_image_size[::-1],5)
     del roi
     frame = cv2.remap(frame,mapx,mapy,cv2.INTER_CUBIC) #undistort frame
-    irCamera.Close()
     return frame

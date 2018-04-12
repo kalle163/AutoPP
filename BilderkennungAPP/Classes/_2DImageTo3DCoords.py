@@ -36,9 +36,12 @@ class C2DImageTo3DCoords(object):
         if (z > 0):
             Point[0] = (z*(u-self.ndepth_Cx)/self.ndepth_Fx) #+ abs(self.ZeroPoint[0]) #x
             Point[1] = (z*(v-self.ndepth_Cy)/self.ndepth_Fy) #+ abs(self.ZeroPoint[1]) #y
-            Point[2] = abs(z-self.ZeroPoint[2])
+            Point[2] = abs(z-(self.ZeroPoint[2]/1000))
+            Point=Point.T
+            Rinv=np.linalg.inv(self.R)
+            NewPoint = np.dot(Rinv,(Point-self.T))
 
-        return Point
+        return NewPoint
 
     def CalcualteCoodinatesOfQuaders(self,listofquaders,XMLWriter):
         if not listofquaders:

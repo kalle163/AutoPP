@@ -54,8 +54,8 @@ def DepthCalibration():
 
         R, jacobian = cv2.Rodrigues(R)
         save= shelve.open(const.irCameraIntrinsic+"/Depth", 'n')
-        save['R'] = R.T
-        save['T'] = T.T
+        save['R'] = R
+        save['T'] = T
         save.close()
         pointsInCameraSpace = np.dot(obj_points, R.T) + T.T
         computedDistance[k,:] = pointsInCameraSpace[0,:,2]* 1000# Z(depth) in mm
