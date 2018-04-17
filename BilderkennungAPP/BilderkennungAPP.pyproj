@@ -50,11 +50,8 @@
     <Compile Include="Kinect\calibrate.py" />
     <Compile Include="Kinect\const.py" />
     <Compile Include="Kinect\depthCalibration.py" />
-    <Compile Include="Kinect\KinectV2.py" />
-    <Compile Include="Kinect\sample.py" />
     <Compile Include="Kinect\stereoCalibrate.py" />
     <Compile Include="Kinect\takePictures.py" />
-    <Compile Include="Kinect\testDistortion.py" />
     <Compile Include="Kinect\__init__.py" />
     <Compile Include="__init__.py" />
   </ItemGroup>

@@ -73,7 +73,9 @@ class MyPanel(Screen):
     listofblobobjects=list()
     listofdetecteddepthobjects=list()
     def __init__(self, **kwargs):
-        if not os.path.exists(const.rgbCameraIntrinsic):
+        if not os.path.exists(const.rootfolder):
+            MyPopup.open()
+        if not os.path.exists(const.rootfolder+"/distancetoground.npy"):
             self.calibrate()
         super(MyPanel, self).__init__(**kwargs)
         self.cam =CameraPyKinectCV()
@@ -81,9 +83,9 @@ class MyPanel(Screen):
         self.XMLWriter = XMLWriter()
         self.XMLReader = XMLReader()
         framemilli,framegrey,self.g = self.cam.getpicturedepth()
-        #self.XMLReader.readinputfile(const.rootfolder+"/Input.xml")
-        #self.listofblobobjects=self.XMLReader.getlistofblobobjects()
-        #self.blob =Blob(self.listofblobobjects)
+        self.XMLReader.readinputfile(const.rootfolder+"/Input.xml")
+        self.listofblobobjects=self.XMLReader.getlistofblobobjects()
+        self.blob =Blob(self.listofblobobjects)
         self.imageto3D = Simple2DImageto3DCoords()     
         return
     def GreyBildpressed(self):
@@ -113,9 +115,6 @@ class MyPanel(Screen):
         self.bildschirm.Changetexture(texture)
         return
 
-    def on_text(self,*args):
-        self.abstandzumboden=int(args[1])
-        return
     def Calibratepressed(self):       
         self.calibrate()
         return
@@ -137,18 +136,19 @@ class MyPanel(Screen):
         return
     def calibrate(self):
         if os.path.exists(const.rootfolder):
-            #shutil.rmtree(const.rootfolder,ignore_errors=True)
+            shutil.rmtree(const.rootfolder,ignore_errors=True)
             pass
 
         #neuenOrdneranlegen(const.depthFolder)
         #neuenOrdneranlegen(const.rgbFolder)
-        neuenOrdneranlegen(const.rgbCameraIntrinsic)
+        #neuenOrdneranlegen(const.rgbCameraIntrinsic)
         #neuenOrdneranlegen(const.irFolder)
         #tp.takePicture()
-        cal.calibrate(isRGB=True)
-        cal.calibrate(isRGB=False)
-        sc.stereocalibrate()
-        dc.DepthCalibration()        
+        #cal.calibrate(isRGB=True)
+        #cal.calibrate(isRGB=False)
+        #sc.stereocalibrate()
+        #dc.DepthCalibration()
+        tp.takedepth()        
        
   
 

@@ -1,3 +1,5 @@
+import shutil
+import os
 
 class XMLWriter(object):
 
@@ -57,6 +59,9 @@ class XMLReader(object):
 
     def readinputfile(self,pfad):
         objectactive=False
+        if not os.path.exists(path):
+            print("Input.xml not found")
+            return
         with open(pfad,'r') as file:
             for line in file:
                 if line.find("#")<0 and line.find("<")>=0 and line.find(">")>=0:

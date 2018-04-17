@@ -37,3 +37,11 @@ class Simple2DImageto3DCoords(object):
                 Point2=self.__Calculate3DPoint__(x2,y2,z)
                 XMLWriter.AddNewQuader(Point1[0],Point1[1],0,abs(Point1[0]-Point2[0]),abs(Point1[1]-Point2[1]),Point1[2])
         return
+
+    def ConvertBalltoCoords(self,listofballs,XMLWriter):
+        if not listofballs:
+            return
+        for ball in listofballs:
+
+
+        return

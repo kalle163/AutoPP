@@ -86,8 +86,29 @@ def takePicture():
     np.save(const.rootfolder+"/distancetoground.npy",DistancetoGround)
     cv2.destroyAllWindows()
 
+def takedepth():
+    kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color |
+                                             PyKinectV2.FrameSourceTypes_Infrared |
+                                         PyKinectV2.FrameSourceTypes_Depth)
 
+    print("measure distance to ground at middele Coordinate")
+    while(cv2.waitKey(1) != 27):#wait ESC press
+        frame = ir_frame_to_jpg(kinect.get_last_infrared_frame())
+        frame[212,256,2] =255
+        cv2.imshow('IR',frame)
 
+    cv2.imshow('IR',redAlert)
+    cv2.waitKey(1)
+    DepthFrameMiddle = np.zeros((const.numberofCalibrations),dtype="uint16")
+    i=0
+    while(i<const.numberofCalibrations):
+        DepthFrame = kinect.get_last_depth_frame()
+        DepthFrame = DepthFrame.reshape(424,512)
+        DepthFrameMiddle[i]=DepthFrame[212,256]
+        i+=1
+    DistancetoGround=np.mean(DepthFrameMiddle)
+    np.save(const.rootfolder+"/distancetoground.npy",DistancetoGround)
+    cv2.destroyAllWindows()
 
 
 
