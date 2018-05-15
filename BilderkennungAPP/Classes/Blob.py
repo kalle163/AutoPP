@@ -139,7 +139,7 @@ class Blob(object):
         for keypoints in self.listofkeypoints:
             im_with_keypoints = cv2.drawKeypoints(im_with_keypoints, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)  
         
-        return im_with_keypoints
+        return im_with_keypoints,listofkeypoints
 
 class Detector(cv2.SimpleBlobDetector):
 

@@ -38,10 +38,16 @@ class Simple2DImageto3DCoords(object):
                 XMLWriter.AddNewQuader(Point1[0],Point1[1],0,abs(Point1[0]-Point2[0]),abs(Point1[1]-Point2[1]),Point1[2])
         return
 
-    def ConvertBalltoCoords(self,listofballs,XMLWriter):
+    def ConvertBalltoCoords(self,listofballs,XMLWriter,depthframe):
         if not listofballs:
             return
-        for ball in listofballs:
-
-
+        for keypoint in listofkeypoins:
+            x = keypoint.pt[0]
+            y = keypoint.pt[1]
+            z = depthframe[x,y]
+            s = keypoint.size
+            r = math.sqrt(s/math.pi)
+            rad= math.tan(self.depthfov[0]/2*math.pi/180)*dis*2*r/const.ir_image_size[0]
+            Point = __Calculate3DPoint__(x,y,z)
+            XMLWriter.AddNewBall(Point[0],Point[1],Point[2],rad)
         return

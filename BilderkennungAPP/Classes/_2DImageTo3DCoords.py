@@ -34,8 +34,8 @@ class C2DImageTo3DCoords(object):
         z=float(z)
         z=z/1000  #z in meters
         if (z > 0):
-            Point[0] = (z*(u-self.ndepth_Cx)/self.ndepth_Fx) #+ abs(self.ZeroPoint[0]) #x
-            Point[1] = (z*(v-self.ndepth_Cy)/self.ndepth_Fy) #+ abs(self.ZeroPoint[1]) #y
+            Point[0] = (z*(u-self.ndepth_Cx)/self.ndepth_Fx) 
+            Point[1] = (z*(v-self.ndepth_Cy)/self.ndepth_Fy)
             Point[2] = abs(z-(self.ZeroPoint[2]/1000))
             Point=Point.T
             Rinv=np.linalg.inv(self.R)

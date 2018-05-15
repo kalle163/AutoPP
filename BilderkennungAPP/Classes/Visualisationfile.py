@@ -20,7 +20,6 @@ import Kinect.depthCalibration as dc
 import shutil
 import os
 from XMLIO import *
-from Kinect.KinectV2 import *
 from Blob import *
 from _2DImageTo3DCoords import *
 from Simple2DImageto3DCoords import *
@@ -72,6 +71,7 @@ class MyPanel(Screen):
     posrec =list([200,100])
     listofblobobjects=list()
     listofdetecteddepthobjects=list()
+    listofkeypoints=list();
     def __init__(self, **kwargs):
         if not os.path.exists(const.rootfolder):
             MyPopup.open()
@@ -106,13 +106,16 @@ class MyPanel(Screen):
                 save=True
             else:
                 save=False
-            framewithblob= self.blob.blobdetection(frame,show,save) 
+            framewithblob,self.listofkeypoints= self.blob.blobdetection(frame,show,save) 
             texture=self.workpic.ColorFrameToKivyPicture(framewithblob)
         else:
             print("There are no Blob objects defined. Define at leat one"+ 
             "Blob Object in input.xml-File and press -Read Input.xml- Button")
             texture=self.workpic.ColorFrameToKivyPicture(frame)
         self.bildschirm.Changetexture(texture)
+        framemilli,framegrey,waste = self.cam.getpicturedepth()
+        del waste, framegrey
+        self.imageto3D.ConvertBalltoCoords(self.listofkeypoints,self.XMLWriter,framemilli)
         return
 
     def Calibratepressed(self):       

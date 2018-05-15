@@ -151,13 +151,7 @@ def IsLowerValueInArray(A,thr):
          return True
      else:
          return False
-        
-def IsHigherValueInArray(A,thr):
-     B=A[A>thr]
-     if len(B)>0:
-         return True
-     else:
-         return False       
+              
 
 def GetMeansWithoutZeros(matrix):
     matrix=matrix.astype(float)

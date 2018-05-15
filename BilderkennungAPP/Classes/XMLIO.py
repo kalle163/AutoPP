@@ -59,7 +59,7 @@ class XMLReader(object):
 
     def readinputfile(self,pfad):
         objectactive=False
-        if not os.path.exists(path):
+        if not os.path.exists(pfad):
             print("Input.xml not found")
             return
         with open(pfad,'r') as file:
