@@ -104,12 +104,13 @@ class Blob(object):
             cv2.imwrite(const.rootfolder+"/hue.jpg",hue)
             cv2.imwrite(const.rootfolder+"/sat.jpg",sat)
             cv2.imwrite(const.rootfolder+"/val.jpg",val)
-            i=0
-        for detector in self.listofdetectors:
+        i=0
+        im_with_keypoints=colorframe
+        for blobdetector in self.listofdetectors:
             i=i+1
-            mask = cv2.inRange(hsv,)
-            maskcolor= cv2.inRange(colorframe,)
-            maskgrey = cv2.inRange(greyframe,)
+            mask = cv2.inRange(hsv,blobdetector.minhsv,blobdetector.maxhsv)
+            maskcolor= cv2.inRange(colorframe,blobdetector.minrgb,blobdetector.maxrgb)
+            maskgrey = cv2.inRange(greyframe,blobdetector.mingrey,blobdetector.maxgrey)
             fullmask= cv2.bitwise_and(mask,maskcolor)
             fullmask = cv2.bitwise_and(fullmask,maskgrey)       
             fullmask = cv2.erode(fullmask, None, iterations=2)
@@ -134,17 +135,16 @@ class Blob(object):
                 cv2.imwrite(const.rootfolder+"/fullmask"+str(i)+".jpg",fullmask)
                 cv2.imwrite(const.rootfolder+"/reversemask"+str(i)+".jpg",reversemask)
             
-            self.listofkeypoints.append(detector.detect(reversemask))
-            im_with_keypoints=colorframe
-        for keypoints in self.listofkeypoints:
-            im_with_keypoints = cv2.drawKeypoints(im_with_keypoints, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)  
-        
-        return im_with_keypoints,listofkeypoints
+            keypoints= blobdetector.detect(reversemask)
+            for keypoint in keypoints:
+                self.listofkeypoints.append(keypoint)
+            im_with_keypoints = cv2.drawKeypoints(im_with_keypoints, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)   
+        return im_with_keypoints,self.listofkeypoints
 
-class Detector(cv2.SimpleBlobDetector):
+class Detector(object):
 
     def __init__(self,params,minrgb,maxrgb,minhsv,maxhsv,mingrey,maxgrey):
-        super(Detector,self).__init__(params)
+        self.detector = cv2.SimpleBlobDetector_create(params)
         self.minrgb=minrgb
         self.maxrgb=maxrgb
         self.minhsv=minhsv
@@ -152,6 +152,10 @@ class Detector(cv2.SimpleBlobDetector):
         self.mingrey=mingrey
         self.maxgrey=maxgrey
         return
+    def detect(self,mask):
+        keypoints =self.detector.detect(mask)
+        return keypoints
+
 
 
     

@@ -98,7 +98,11 @@ class Bildverarbeitung(object):
                 cnts = contours.sort_contours(cnts)[0]       
                 for (i, c) in enumerate(cnts):
 	                (x,y,w,h) = cv2.boundingRect(c)
-                        z=GetMeansWithoutZeros(framemilli[y:y+h,x:x+w])
+                        condittion = areaf[k] != 0
+                        con = condittion.astype(int)
+                        localframemilli = np.multiply(framemilli,con)
+                        localframemilli[localframemilli >  np.min(localframemilli[np.nonzero(localframemilli)])+5] =0
+                        z=GetMeansWithoutZeros(localframemilli[y:y+h,x:x+w])
                 new_area=cv2.bitwise_or(areaf[k],new_area)
                 if(show):
                     cv2.imshow('newarea',new_area)
@@ -111,9 +115,24 @@ class Bildverarbeitung(object):
 	                (x,y,w,h) = cv2.boundingRect(c)          
                         listofdetectedobjectspixel.append(RectanglePixel(x,y,w,h,z))
 
-        print("blabla")
         return listofdetectedobjectspixel
 
+
+
+def find_squares(img):
+    contours, _hierarchy = find_contours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    for cnt in contours:
+        x, y, w, h = cv2.boundingRect(cnt)
+        cnt_len = cv2.arcLength(cnt, True)
+        cnt = cv2.approxPolyDP(cnt, 0.02*cnt_len, True)
+        area = cv2.contourArea(cnt)
+        if len(cnt) == 4  and cv2.isContourConvex(cnt):
+            cnt = cnt.reshape(-1, 2)
+            max_cos = np.max([angle_cos( cnt[i], cnt[(i+1) % 4], cnt[(i+2) % 4] ) for i in xrange(4)])
+            if max_cos < 0.1:
+                if (1 - (float(w) / float(h)) <= 0.07 and 1 - (float(h) / float(w)) <= 0.07):
+                    squares.append(cnt)
+    return squares 
 
     
 

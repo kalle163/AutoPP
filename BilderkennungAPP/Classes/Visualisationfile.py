@@ -73,11 +73,11 @@ class MyPanel(Screen):
     listofdetecteddepthobjects=list()
     listofkeypoints=list();
     def __init__(self, **kwargs):
+        super(MyPanel, self).__init__(**kwargs)
         if not os.path.exists(const.rootfolder):
-            MyPopup.open()
+           neuenOrdneranlegen(const.rootfolder)
         if not os.path.exists(const.rootfolder+"/distancetoground.npy"):
             self.calibrate()
-        super(MyPanel, self).__init__(**kwargs)
         self.cam =CameraPyKinectCV()
         self.workpic =Bildverarbeitung()
         self.XMLWriter = XMLWriter()
@@ -86,7 +86,8 @@ class MyPanel(Screen):
         self.XMLReader.readinputfile(const.rootfolder+"/Input.xml")
         self.listofblobobjects=self.XMLReader.getlistofblobobjects()
         self.blob =Blob(self.listofblobobjects)
-        self.imageto3D = Simple2DImageto3DCoords()     
+        self.imageto3D = Simple2DImageto3DCoords() 
+     
         return
     def GreyBildpressed(self):
         combinedframe,worldCoordinates=self.kinect.takePicture()
@@ -111,6 +112,7 @@ class MyPanel(Screen):
         else:
             print("There are no Blob objects defined. Define at leat one"+ 
             "Blob Object in input.xml-File and press -Read Input.xml- Button")
+            frame= cv2.cvtColor(frame,cv2.COLOR_BGRA2BGR)
             texture=self.workpic.ColorFrameToKivyPicture(frame)
         self.bildschirm.Changetexture(texture)
         framemilli,framegrey,waste = self.cam.getpicturedepth()
@@ -122,6 +124,7 @@ class MyPanel(Screen):
         self.calibrate()
         return
     def HeightMapPressed(self):
+        self.listofdetecteddepthobjects = list()
         framemilli,framegrey,self.g = self.cam.getpicturedepth()
         texturegrey=self.workpic.DetphFrameToKivyPicture(framegrey)
         self.bildschirm.Changetexture(texturegrey)
@@ -138,19 +141,6 @@ class MyPanel(Screen):
         self.blob=Blob(self.listofblobobjects)
         return
     def calibrate(self):
-        if os.path.exists(const.rootfolder):
-            shutil.rmtree(const.rootfolder,ignore_errors=True)
-            pass
-
-        #neuenOrdneranlegen(const.depthFolder)
-        #neuenOrdneranlegen(const.rgbFolder)
-        #neuenOrdneranlegen(const.rgbCameraIntrinsic)
-        #neuenOrdneranlegen(const.irFolder)
-        #tp.takePicture()
-        #cal.calibrate(isRGB=True)
-        #cal.calibrate(isRGB=False)
-        #sc.stereocalibrate()
-        #dc.DepthCalibration()
         tp.takedepth()        
        
   

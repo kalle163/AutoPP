@@ -18,9 +18,16 @@ class Simple2DImageto3DCoords(object):
         u=float(u)
         v=float(v)
         Point=np.zeros((3,1),dtype="float")
-        Point[0]= math.tan(self.depthfov[0]/2*math.pi/180)*dis*2*u/const.ir_image_size[0]
-        Point[1]=math.tan(self.depthfov[1]/2*math.pi/180)*dis*2*v/const.ir_image_size[1]
-        Point[2]=(self.distancetoground-dis)
+        localdis=dis
+        localdistancetoground = self.distancetoground
+        for x in range(0, 100):
+            localx= (math.tan(self.depthfov[0]/2*math.pi/180)*dis*2*u/const.ir_image_size[0])-(math.tan(self.depthfov[0]/2*math.pi/180)*dis)
+            localy= (math.tan(self.depthfov[1]/2*math.pi/180)*dis*2*v/const.ir_image_size[1])-(math.tan(self.depthfov[1]/2*math.pi/180)*dis)
+            localdis=math.sqrt(math.pow(localdis,2)-math.sqrt(math.pow(localx,2)+math.pow(localy,2)))
+            localdistancetoground = math.sqrt(math.pow(localdistancetoground,2)-math.sqrt(math.pow(localx,2)+math.pow(localy,2)))
+        Point[0]= math.tan(self.depthfov[0]/2*math.pi/180)*localdis*2*u/const.ir_image_size[0]
+        Point[1]=math.tan(self.depthfov[1]/2*math.pi/180)*localdis*2*v/const.ir_image_size[1]
+        Point[2]=(localdistancetoground-localdis)
         return Point
 
     def ConvertPixQuadertoCoordQuader(self,listofquaders,XMLWriter):
@@ -30,6 +37,7 @@ class Simple2DImageto3DCoords(object):
             x1= quader.x
             y1= quader.y
             z= quader.height
+            print (str(x1-(const.ir_image_size[0]/2))+"   "+str(y1-(const.ir_image_size[1]/2))+"    "+str(z))
             x2 =quader.x+quader.widthx
             y2 =quader.y+quader.widthy
             if not z==0:
@@ -41,13 +49,13 @@ class Simple2DImageto3DCoords(object):
     def ConvertBalltoCoords(self,listofballs,XMLWriter,depthframe):
         if not listofballs:
             return
-        for keypoint in listofkeypoins:
-            x = keypoint.pt[0]
-            y = keypoint.pt[1]
+        for keypoint in listofballs:
+            x = int(keypoint.pt[0]*const.ir_image_size[0]/const.rgb_image_size[0])
+            y = int(keypoint.pt[1]*const.ir_image_size[1]/const.rgb_image_size[1])
             z = depthframe[x,y]
             s = keypoint.size
             r = math.sqrt(s/math.pi)
-            rad= math.tan(self.depthfov[0]/2*math.pi/180)*dis*2*r/const.ir_image_size[0]
-            Point = __Calculate3DPoint__(x,y,z)
+            rad= math.tan(self.depthfov[0]/2*math.pi/180)*z*2*r/const.ir_image_size[0]
+            Point = self.__Calculate3DPoint__(x,y,z)
             XMLWriter.AddNewBall(Point[0],Point[1],Point[2],rad)
         return
