@@ -23,6 +23,7 @@ from XMLIO import *
 from Blob import *
 from _2DImageTo3DCoords import *
 from Simple2DImageto3DCoords import *
+from SimpleCalibration import *
 
 def ChangeSavePathInConst(path,deletestate):
     if deletestate == 'down':
@@ -50,6 +51,84 @@ class MyPopup(Popup):
     def ChangeSavePath(self,path,deletestate):
         print(path)
         ChangeSavePathInConst(path,deletestate)
+
+class MyCaliPopup(Popup):
+    def __init__(self, **kwargs):
+        self.simcal = SimpleCalibrator()
+        self.init = False
+        return super(MyCaliPopup, self).__init__(**kwargs)
+
+    def ResetPicture(self):
+        if self.checkbox.state == 'down':
+            chessboard= True
+        else:
+            chessboard = False
+        self.simcal.takePicture(chessboard)
+        self._GetActualValues_()
+        texture=self.simcal.PictureWithCross(self.rotvalue,self.xvalue,self.yvalue)
+        self.bildschirm.Changetexture(texture)
+        self.resetpic.text = "Reset Picture"
+        self.init = True
+        return
+    def SaveCalibration(self):
+        self.simcal.find_points(self.rotvalue)
+        self.dismiss()
+        return
+    def OnTouchMove(self):
+        if self.init:
+            self._SetSilderToNumeric_()
+            self._RefreshPicture_()
+        return
+    def NumericChange(self):
+        if self.init:
+            self._SetNumericToSlider_()
+            self._RefreshPicture_()
+        return
+    def _GetActualValues_(self):
+        x = int(self.sliderhor.value)
+        y = int(self.sliderver.value)
+        rot = int(self.sliderrot.value)
+        y=1079-y
+        self.xvalue=x
+        self.yvalue=y
+        self.rotvalue=rot
+        return
+    def _RefreshPicture_(self):
+        self._GetActualValues_()
+        texture=self.simcal.PictureWithCross(self.rotvalue,self.xvalue,self.yvalue)
+        self.bildschirm.Changetexture(texture)
+        return
+    def _SetSilderToNumeric_(self):
+        x = int(self.sliderhor.value)
+        y = int(self.sliderver.value)
+        rot = int(self.sliderrot.value)
+        y=1079-y
+        self.numerichor.text=str(x)
+        self.numericver.text=str(y)
+        self.numericrot.text=str(rot)
+        return
+    def _SetNumericToSlider_(self):
+        x = int(self.numerichor.text)
+        y = int(self.numericver.text)
+        rot = int(self.numericrot.text)
+        y=1079-y
+        if x > 1920-32:
+            x=1920-32
+        if x < 31:
+            x=31
+        if y > 1080-32:
+            x=1080-32
+        if y < 31:
+            y=31
+        if rot > 359:
+            rot=359
+        if rot < 0:
+            rot=0
+        self.sliderhor.value=x
+        self.sliderver.value=y
+        self.sliderrot.value=rot
+        return
+
 
 class Bildschirm(Widget):
     texture = ObjectProperty(None)
@@ -120,9 +199,9 @@ class MyPanel(Screen):
         self.imageto3D.ConvertBalltoCoords(self.listofkeypoints,self.XMLWriter,framemilli)
         return
 
-    def Calibratepressed(self):       
-        self.calibrate()
-        return
+    #def Calibratepressed(self):       
+     #   self.calibrate()
+      #  return
     def HeightMapPressed(self):
         self.listofdetecteddepthobjects = list()
         framemilli,framegrey,self.g = self.cam.getpicturedepth()

@@ -74,7 +74,7 @@ class Blob(object):
 
     def blobdetection(self,colorframe,show=False,save=False):
         self.listofkeypoints=list()
-
+        colorframe = cv2.flip(colorframe,+1);
         colorframe=cv2.GaussianBlur(colorframe,(3,3),0)
         greyframe = cv2.cvtColor(colorframe,cv2.COLOR_RGBA2GRAY)
         colorframe= cv2.cvtColor(colorframe,cv2.COLOR_RGBA2RGB)

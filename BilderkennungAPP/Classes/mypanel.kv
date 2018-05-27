@@ -3,7 +3,114 @@
     color: 0,0,0,1
     font_size: 12
     bold: True
-   
+<NumericInput@TextInput>:
+    multilinemode: False   
+
+<MyCaliPopup@Popup>:
+    id: mycalipopup
+    auto_dismiss: False
+    size_hint: None, None
+    size: 1423, 800
+    title: "Calibration"
+	bildschirm: bildschirm
+	sliderrot: sliderrot
+	sliderhor: sliderhor
+	sliderver: sliderver
+	numerichor: numerichor
+	numericver: numericver
+	numericrot: numericrot
+	resetpic: resetpic
+	checkbox: checkbox
+    FloatLayout:        
+        id:floatlayoutpopup
+		Bildschirm:
+            id: bildschirm
+            pos_hint: {'x':0.1, 'top':0.99}
+            size_hint: 0.9, 0.9
+		Slider:
+			id: sliderhor
+			pos_hint: {'x':0.1, 'top':0.08}
+			size_hint: 0.6, 0.05
+			min:31
+			max:1888
+			value:959
+			step: 1
+			on_value: root.OnTouchMove()
+		Slider:
+			id: sliderver
+			orientation: "vertical"
+			pos_hint: {'x':0.04, 'top':0.9}
+			size_hint: 0.05, 0.7
+			min:31
+			max:1048
+			value:539
+			step: 1
+			on_value: root.OnTouchMove()
+		Button:
+			id: resetpic
+			pos_hint: {'x':0.8, 'top':0.07}
+			size_hint: 0.09, 0.06
+			text: "Take Picture"
+			on_release: root.ResetPicture()
+		Button:
+			id: completecali
+			pos_hint: {'x':0.9, 'top':0.07}
+			size_hint: 0.09, 0.06
+			text: "Save Calibration"
+			on_release: root.SaveCalibration()
+		NumericInput:
+			id: numerichor
+			pos_hint: {'x':0.70, 'top':0.07}
+			size_hint: 0.05, 0.04
+			text: "959"
+			on_text: root.NumericChange()
+		NumericInput:
+			id: numericver
+			pos_hint: {'x':0.04, 'top':0.93}
+			size_hint: 0.05, 0.04
+			text:"539"
+			on_text: root.NumericChange()
+		Label:
+            id: labelhor
+            text:"Displacement x-Direction"
+            pos_hint: {'x':0.53, 'top':0.04}
+            size_hint: 0.2, 0.04
+		Label:
+            id: labelver
+            text:"Displacement\ny-Direction"
+            pos_hint: {'x':0.01, 'top':0.99}
+            size_hint: 0.08, 0.05
+		Label:
+            id: labelrot
+            text:"Rotation \nAnti-Clockwised"
+            pos_hint: {'x':0.01, 'top':0.21}
+            size_hint: 0.08, 0.05
+		Slider:
+			id: sliderrot
+			pos_hint: {'x':0.005, 'top':0.16}
+			size_hint: 0.095, 0.05
+			min:0
+			max:359
+			value:0
+			on_value: root.OnTouchMove()
+			step: 1
+		NumericInput:
+			id: numericrot
+			pos_hint: {'x':0.028, 'top':0.11}
+			size_hint: 0.05, 0.04
+			text: "0"
+			on_text: root.NumericChange()
+		Label:
+            id: labelcheck
+            text:"Chessbaord:"
+            pos_hint: {'x':0.0, 'top':0.05}
+            size_hint: 0.08, 0.04
+		CheckBox:
+            id: checkbox
+            state: 'down'
+            pos_hint: {'x':0.06, 'top':0.05}
+            size_hint: 0.04, 0.04
+
 
 
 <MyPopup@Popup>:
@@ -49,9 +156,6 @@
             pos:  self.pos
             size: self.size
             texture: self.texture
-
-<NumericInput@TextInput>:
-    multilinemode: False
 
 <MyPanel>
     name: "myPanel"
@@ -101,7 +205,7 @@
             text: "Calibrate"
             pos_hint: {'x':0.005, 'top':0.55}
             size_hint: 0.2, 0.1
-            on_press: root.Calibratepressed()
+            on_press: Factory.MyCaliPopup().open()
         Button: 
             id: changepath
             text: "Change Path"

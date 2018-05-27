@@ -27,18 +27,22 @@ class Bildverarbeitung(object):
     def __init__(self, *args, **kwargs):
         return super(Bildverarbeitung, self).__init__(*args, **kwargs)
     def DetphFrameToKivyPicture(self,depthframe):
+        depthframe = cv2.flip(depthframe,0);
         depthframe = depthframe.reshape(424*512)
         depthframe=cv2.cvtColor(depthframe,cv2.COLOR_GRAY2BGR)
         depthframe = depthframe.reshape(424*512*3)
         self.texturedepth.blit_buffer(depthframe,bufferfmt='ubyte',colorfmt='bgr')
         return self.texturedepth
     def ColorFrameToKivyPicture(self,colorframe):
+        colorframe = cv2.flip(colorframe,0);
         colorframe = colorframe.reshape(1080*1920*3)
         self.texturecolor.blit_buffer(colorframe,bufferfmt='ubyte',colorfmt='bgr')
         return self.texturecolor 
     def DetectionOfDepthObjects(self,framemilli,framegrey,g):
         #framemilli= UndistortDethFrameMilli(framemilli)
         show = True   #Set to False to Hide Pictures
+        framegrey = cv2.flip(framegrey,1);
+        framemilli = cv2.flip(framemilli,1);
         a,b=GetMinDistances(g)
         frametherehold = np.zeros(framegrey.shape,dtype='uint8')
         frametherehold = cv2.threshold(framegrey,(255-a),255,cv2.THRESH_TOZERO_INV)
