@@ -21,6 +21,8 @@
 	numericrot: numericrot
 	resetpic: resetpic
 	checkbox: checkbox
+	checkbox3: checkbox3
+	checkbox2: checkbox2
     FloatLayout:        
         id:floatlayoutpopup
 		Bildschirm:
@@ -40,7 +42,7 @@
 			id: sliderver
 			orientation: "vertical"
 			pos_hint: {'x':0.04, 'top':0.9}
-			size_hint: 0.05, 0.7
+			size_hint: 0.05, 0.6
 			min:31
 			max:1048
 			value:539
@@ -83,11 +85,11 @@
 		Label:
             id: labelrot
             text:"Rotation \nAnti-Clockwised"
-            pos_hint: {'x':0.01, 'top':0.21}
+            pos_hint: {'x':0.01, 'top':0.31}
             size_hint: 0.08, 0.05
 		Slider:
 			id: sliderrot
-			pos_hint: {'x':0.005, 'top':0.16}
+			pos_hint: {'x':0.005, 'top':0.26}
 			size_hint: 0.095, 0.05
 			min:0
 			max:359
@@ -96,17 +98,38 @@
 			step: 1
 		NumericInput:
 			id: numericrot
-			pos_hint: {'x':0.028, 'top':0.11}
+			pos_hint: {'x':0.028, 'top':0.21}
 			size_hint: 0.05, 0.04
 			text: "0"
 			on_text: root.NumericChange()
 		Label:
             id: labelcheck
             text:"Chessbaord:"
-            pos_hint: {'x':0.0, 'top':0.05}
+            pos_hint: {'x':0.0, 'top':0.15}
             size_hint: 0.08, 0.04
 		CheckBox:
             id: checkbox
+            state: 'down'
+            pos_hint: {'x':0.06, 'top':0.15}
+            size_hint: 0.04, 0.04
+			on_state: root.ChessboardChange()
+		Label:
+            id: labelcheck2
+            text:"auto AOI:"
+            pos_hint: {'x':0.0, 'top':0.1}
+            size_hint: 0.08, 0.04
+		CheckBox:
+            id: checkbox2
+            state: 'down'
+            pos_hint: {'x':0.06, 'top':0.1}
+            size_hint: 0.04, 0.04
+		Label:
+            id: labelcheck3
+            text:"Distortion:"
+            pos_hint: {'x':0.0, 'top':0.05}
+            size_hint: 0.08, 0.04
+		CheckBox:
+            id: checkbox3
             state: 'down'
             pos_hint: {'x':0.06, 'top':0.05}
             size_hint: 0.04, 0.04

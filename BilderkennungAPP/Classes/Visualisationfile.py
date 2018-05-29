@@ -71,9 +71,23 @@ class MyCaliPopup(Popup):
         self.init = True
         return
     def SaveCalibration(self):
-        self.simcal.find_points(self.rotvalue)
+        if self.checkbox.state == 'down':
+            areaofinterest = self.simcal.find_points(self.rotvalue)
+            if self.checkbox2.state == 'down':
+                self.areaofinterest = areaofinterest
+            else:
+                self.areaofinterest = 0
+            if self.checkbox3.state  == 'down':
+                self.simcal.Distortion()
+        self._SaveResults_()
         self.dismiss()
         return
+    def ChessboardChange(self):
+        if self.checkbox.state == 'down':
+            pass
+        else:
+            self.checkbox2.state = 'normal'
+            self.checkbox3.state = 'normal'
     def OnTouchMove(self):
         if self.init:
             self._SetSilderToNumeric_()
@@ -127,6 +141,8 @@ class MyCaliPopup(Popup):
         self.sliderhor.value=x
         self.sliderver.value=y
         self.sliderrot.value=rot
+        return
+    def _SaveResults_(self):
         return
 
 

@@ -55,7 +55,7 @@ class SimpleCalibrator(object):
    
 
     def find_points(self,rot):
-        PATTERN_SIZE = (7, 5)
+        PATTERN_SIZE = const.pattern_size
         image = self.colorframe.copy()
         image = imutils.rotate(image,rot)
         color_image = image.copy()
@@ -68,15 +68,70 @@ class SimpleCalibrator(object):
         if found:
             cv2.cornerSubPix(image, corners, (5, 5), (-1, -1), (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
             cv2.drawChessboardCorners(color_image, PATTERN_SIZE, corners, found)
+            localareaofinterest = np.array([corners[0][0],corners[PATTERN_SIZE[0]-1][0],corners[PATTERN_SIZE[0]*(PATTERN_SIZE[1]-1)][0],corners[(PATTERN_SIZE[0]*PATTERN_SIZE[1])-1][0]])
             print(corners)
+            print("Interesse")
+            print(localareaofinterest)
+            areaofinterest = _SortAreaOfInterest_(localareaofinterest)
+            print(areaofinterest)
+            self.areaofinterest = areaofinterest
+            self.sortedcorners = _SortCorners_(corners)
             cv2.imshow('Corner',color_image)
             cv2.waitKey(0)
-        return 
+            cv2.imwrite(const.rootfolder+"Chessbaord.jpg",color_image)
+        else:
+            print("Chessboard not found. No Area of Interst defined")
+            areaofinterest = 0
+        return  areaofinterest
+
+    def Distortion(self):
+        bigxyratio = ((((self.areaofinterest[1][0]-self.areaofinterest[0][0])+(self.areaofinterest[3][0]-self.areaofinterest[2][0]))/2)/7)/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/5)
+        print(bigxyratio)
+        return
 
 
-
-
-
+def _SortAreaOfInterest_(localareaofinterest):
+    avgx=0
+    avgy=0
+    for point in localareaofinterest:
+        avgx=avgx+point[0]
+        avgy=avgy+point[1]
+    avgx=avgx/4
+    avgy=avgy/4
+    areaofinterest = np.zeros((4,2),dtype=float)    
+    find=False
+    i=0
+    while not find:
+        if localareaofinterest[i][0] < avgx and localareaofinterest[i][1] < avgy:
+            find=True
+        else:
+            i=i+1
+    areaofinterest[0]=localareaofinterest[i]
+    find=False
+    i=0
+    while not find:
+        if localareaofinterest[i][0] > avgx and localareaofinterest[i][1] < avgy:
+            find=True
+        else:
+            i=i+1
+    areaofinterest[1]=localareaofinterest[i]
+    find=False
+    i=0
+    while not find:
+        if localareaofinterest[i][0] < avgx and localareaofinterest[i][1] > avgy:
+            find=True
+        else:
+            i=i+1
+    areaofinterest[2]=localareaofinterest[i]
+    find=False
+    i=0
+    while not find:
+        if localareaofinterest[i][0] > avgx and localareaofinterest[i][1] > avgy:
+            find=True
+        else:
+            i=i+1
+    areaofinterest[3]=localareaofinterest[i]
+    return areaofinterest
 
 def _ColorFrameToKivyPicture_(colorframe):
         texturecolor = Texture.create(size=(1920,1080),colorfmt='bgr')
@@ -86,3 +141,19 @@ def _ColorFrameToKivyPicture_(colorframe):
         texturecolor.blit_buffer(colorframe,bufferfmt='ubyte',colorfmt='bgr')
         return texturecolor 
 
+def _SortCorners_(corners):
+    if corners[0][0][1] > corners[(const.pattern_size[0]*const.pattern_size[1])-1][0][1]:
+        horswift=True
+    else:
+        horswift=False
+    if corners[0][0][0] > corners[(const.pattern_size[0]*const.pattern_size[1])-1][0][0]:
+        verswift=True
+    else:
+        verswift=False
+    corners = corners.reshape(const.pattern_size[0]*const.pattern_size[1]*2)
+    corners = corners.reshape(const.pattern_size[1],const.pattern_size[0],2)
+    if horswift:
+        corners=np.flipud(corners)
+    if verswift:
+        corners=np.fliplr(corners)
+    return corners
