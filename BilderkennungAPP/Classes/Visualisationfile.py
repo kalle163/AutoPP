@@ -24,6 +24,7 @@ from Blob import *
 from _2DImageTo3DCoords import *
 from Simple2DImageto3DCoords import *
 from SimpleCalibration import *
+import shelve
 
 def ChangeSavePathInConst(path,deletestate):
     if deletestate == 'down':
@@ -78,7 +79,12 @@ class MyCaliPopup(Popup):
             else:
                 self.areaofinterest = 0
             if self.checkbox3.state  == 'down':
-                self.simcal.Distortion()
+               self.xyratio,self.xvalue,self.yvalue  = self.simcal.Distortion(self.xvalue,self.yvalue)
+               self.areaofinterest = self.simcal.find_points(self.rotvalue)
+               self.xlenperpix,self.ylenperpix = self.simcal.Exit()
+            else:
+                self.xlenperpix = 0
+                self.ylenperpix = 0
         self._SaveResults_()
         self.dismiss()
         return
@@ -143,6 +149,14 @@ class MyCaliPopup(Popup):
         self.sliderrot.value=rot
         return
     def _SaveResults_(self):
+        caliresult = shelve.open(const.rootfolder+"\CalibrationResults", 'n')
+        caliresult['areaofinterest'] = self.areaofinterest
+        caliresult['rotation'] =  self.rotvalue
+        caliresult['pointzero'] = np.array([self.xvalue,self.yvalue])
+        caliresult['lenperpix'] =np.array([self.xlenperpix,self.ylenperpix])
+        caliresult['xyratio'] = self.xyratio
+        caliresult.close()
+
         return
 
 

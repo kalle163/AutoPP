@@ -10,6 +10,7 @@ import imutils
 
 class SimpleCalibrator(object):
     def __init__(self):
+        self.xyratio=1.0
         return super(SimpleCalibrator, self).__init__()
 
     def takePicture(self,chessboard):
@@ -55,20 +56,29 @@ class SimpleCalibrator(object):
    
 
     def find_points(self,rot):
-        PATTERN_SIZE = const.pattern_size
         image = self.colorframe.copy()
         image = imutils.rotate(image,rot)
+        if self.xyratio > 1:
+            image = cv2.resize(image, (0,0), fx=(1/self.xyratio), fy=1.0) 
+        elif self.xyratio < 1:
+            image = cv2.resize(image, (0,0), fx=1.0, fy=self.xyratio) 
         color_image = image.copy()
         image = cv2.cvtColor(image,cv2.COLOR_BGRA2GRAY)
         cv2.imshow('Color',image)
         cv2.waitKey(0)
         debug_images = []
        
-        found, corners = cv2.findChessboardCorners(image, PATTERN_SIZE,  flags=cv2.CALIB_CB_ADAPTIVE_THRESH)
+        found, corners = cv2.findChessboardCorners(image, const.pattern_size,  flags=cv2.CALIB_CB_ADAPTIVE_THRESH)
         if found:
             cv2.cornerSubPix(image, corners, (5, 5), (-1, -1), (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001))
-            cv2.drawChessboardCorners(color_image, PATTERN_SIZE, corners, found)
-            localareaofinterest = np.array([corners[0][0],corners[PATTERN_SIZE[0]-1][0],corners[PATTERN_SIZE[0]*(PATTERN_SIZE[1]-1)][0],corners[(PATTERN_SIZE[0]*PATTERN_SIZE[1])-1][0]])
+            if (corners[3][0][1] - 30) >corners[0][0][1]:
+                const.pattern_size = const.pattern_size[::-1]
+                found, corners = cv2.findChessboardCorners(image, const.pattern_size,  flags=cv2.CALIB_CB_ADAPTIVE_THRESH)
+                if found:
+                    cv2.cornerSubPix(image, corners, (5, 5), (-1, -1), (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)) 
+           
+            cv2.drawChessboardCorners(color_image, const.pattern_size, corners, found)
+            localareaofinterest = np.array([corners[0][0],corners[const.pattern_size[0]-1][0],corners[const.pattern_size[0]*(const.pattern_size[1]-1)][0],corners[(const.pattern_size[0]*const.pattern_size[1])-1][0]])
             print(corners)
             print("Interesse")
             print(localareaofinterest)
@@ -78,16 +88,28 @@ class SimpleCalibrator(object):
             self.sortedcorners = _SortCorners_(corners)
             cv2.imshow('Corner',color_image)
             cv2.waitKey(0)
-            cv2.imwrite(const.rootfolder+"Chessbaord.jpg",color_image)
+            cv2.imwrite(const.rootfolder+"\Chessbaord.jpg",color_image)
         else:
             print("Chessboard not found. No Area of Interst defined")
             areaofinterest = 0
         return  areaofinterest
 
-    def Distortion(self):
-        bigxyratio = ((((self.areaofinterest[1][0]-self.areaofinterest[0][0])+(self.areaofinterest[3][0]-self.areaofinterest[2][0]))/2)/7)/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/5)
+    def Distortion(self,x,y):
+        bigxyratio = ((((self.areaofinterest[1][0]-self.areaofinterest[0][0])+(self.areaofinterest[3][0]-self.areaofinterest[2][0]))/2)/const.pattern_size[0])/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/const.pattern_size[1])
         print(bigxyratio)
-        return
+        self.xyratio = bigxyratio
+        if bigxyratio > 1:
+            x=int(x/bigxyratio)
+        elif bigxyratio < 1:
+            y=int(y*bigxyratio)
+        return bigxyratio,x,y
+
+    def Exit(self):
+        bigxyratio = ((((self.areaofinterest[1][0]-self.areaofinterest[0][0])+(self.areaofinterest[3][0]-self.areaofinterest[2][0]))/2)/const.pattern_size[0])/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/const.pattern_size[1])
+        print(bigxyratio)
+        xlenperpix = const.square_size/((((self.areaofinterest[1][0]-self.areaofinterest[0][0])+(self.areaofinterest[3][0]-self.areaofinterest[2][0]))/2)/const.pattern_size[0])
+        ylenperpix = const.square_size/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/const.pattern_size[1])
+        return xlenperpix, ylenperpix
 
 
 def _SortAreaOfInterest_(localareaofinterest):
