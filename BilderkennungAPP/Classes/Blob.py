@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import Kinect.const as const
+import shelve
+import imutils
 
 class Blob(object):
     def __init__(self,listofblobobjects):
@@ -35,8 +37,11 @@ class Blob(object):
                 params.minInertiaRatio = blobobject.mininertiaratio
                 params.maxInertiaRatio = blobobject.maxinertiaratio
 
-
-                detector = Detector(params,blobobject.minrgb,blobobject.maxrgb,blobobject.minhsv,blobobject.maxhsv,blobobject.mingrey,blobobject.maxgrey)
+                if blobobject.mincircularity < 0.8 and blobobject.maxcircularity > 0.6 :
+                    typ ='quader'
+                elif blobobject.maxcircularity > 0.9  and blobobject.mincircularity > 0.8:
+                    typ ='ball'
+                detector = Detector(params,blobobject.minrgb,blobobject.maxrgb,blobobject.minhsv,blobobject.maxhsv,blobobject.mingrey,blobobject.maxgrey,typ)
                 self.listofdetectors.append(detector)
                 
         else:
@@ -73,9 +78,41 @@ class Blob(object):
         return
 
     def blobdetection(self,colorframe,show=False,save=False):
-        self.listofkeypoints=list()
+        caliresult = shelve.open(const.rootfolder+"\CalibrationResults")
+        xyratio = caliresult['xyratio']
+        rot = caliresult['rotation']
+        areaofinterest = caliresult['areaofinterest']
+        caliresult.close()
+        self.listofballkeypoints=list()
+        self.listofquaderkeypoints=list()
         colorframe = cv2.flip(colorframe,+1);
         colorframe=cv2.GaussianBlur(colorframe,(3,3),0)
+        colorframe= imutils.rotate(colorframe,rot)
+        if xyratio > 1:
+            colorframe = cv2.resize(colorframe, (0,0), fx=(1/xyratio), fy=1.0) 
+        elif xyratio < 1:
+            colorframe= cv2.resize(colorframe, (0,0), fx=1.0, fy=xyratio)
+        if areaofinterest[0][0] < areaofinterest[2][0]:
+            xleftborder = int(areaofinterest[0][0])
+        else:
+            xleftborder = int(areaofinterest[2][0])
+        if areaofinterest[1][0] > areaofinterest[3][0]:
+            xrightborder = int(areaofinterest[1][0])
+        else:
+            xrightborder = int(areaofinterest[3][0])
+        if areaofinterest[0][1] < areaofinterest[1][1]:
+            ytopborder = int(areaofinterest[0][1])
+        else:
+            ytopborder = int(areaofinterest[1][1])
+        if areaofinterest[2][1] > areaofinterest[3][1]:
+            ybottomborder = int(areaofinterest[2][1])
+        else:
+            ybottomborder = int(areaofinterest[3][1])
+        sizevec = colorframe.shape
+        colorframe[:,0:xleftborder] = [0,0,0,0]
+        colorframe[:,xrightborder:(sizevec[1]-1)] = [0,0,0,0]
+        colorframe[0:ytopborder,:] =[0,0,0,0]
+        colorframe[ybottomborder:(sizevec[0]-1),:] = [0,0,0,0]
         greyframe = cv2.cvtColor(colorframe,cv2.COLOR_RGBA2GRAY)
         colorframe= cv2.cvtColor(colorframe,cv2.COLOR_RGBA2RGB)
 
@@ -136,14 +173,19 @@ class Blob(object):
                 cv2.imwrite(const.rootfolder+"/reversemask"+str(i)+".jpg",reversemask)
             
             keypoints= blobdetector.detect(reversemask)
-            for keypoint in keypoints:
-                self.listofkeypoints.append(keypoint)
+            if blobdetector.type == 'ball':
+                for keypoint in keypoints:
+                    self.listofballkeypoints.append(keypoint)
+            elif blobdetector.type == 'quader':
+                for keypoint in keypoints:
+                    self.listofquaderkeypoints.append(keypoint)
             im_with_keypoints = cv2.drawKeypoints(im_with_keypoints, keypoints, np.array([]), (255,0,0), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)   
-        return im_with_keypoints,self.listofkeypoints
+        return im_with_keypoints,self.listofballkeypoints,self.listofquaderkeypoints
 
 class Detector(object):
 
-    def __init__(self,params,minrgb,maxrgb,minhsv,maxhsv,mingrey,maxgrey):
+    def __init__(self,params,minrgb,maxrgb,minhsv,maxhsv,mingrey,maxgrey,typ):
+        self.type = typ
         self.detector = cv2.SimpleBlobDetector_create(params)
         self.minrgb=minrgb
         self.maxrgb=maxrgb

@@ -5,6 +5,7 @@ class XMLWriter(object):
 
     listofquader = list()
     listofballs  = list()
+    listofblobquader  =list()
 
     def __init__(self, *args, **kwargs):
         return super(XMLWriter, self).__init__(*args, **kwargs)
@@ -18,6 +19,11 @@ class XMLWriter(object):
         ball= Ball(xpos,ypos,zpos,rad)
         self.listofballs.append(ball)
         return
+    def AddNewBlobQuader(self,xpos,ypos,zpos,beta):
+        quader= BlobQuader(xpos,ypos,zpos,beta)
+        self.listofblobquader.append(quader)
+        return
+
 
     def deleteList(quader=True,balls=True):
         if quader:
@@ -44,8 +50,15 @@ class XMLWriter(object):
                 for i in self.listofballs:
                     file.write("\t<Ball Nr=%s >\n" % (k))
                     file.write("\t\t<Position x=%s y=%s z=%s/>\n" % (str(i.xpos),str(i.ypos),str(i.zpos))) 
-                    file.write("\t\t<Radius Value=%s />\n" % (str(i.Radius)))
+                    file.write("\t\t<Radius Value=%s/>\n" % (str(i.Radius)))
                     file.write("\t</Ball>\n")
+                    k+=1
+                k=1
+                for i in self.listofblobquader:
+                    file.write("\t<Quader Nr=%s >\n" % (k))
+                    file.write("\t\t<Position x=%s y=%s z=%s/>\n" % (str(i.xpos),str(i.ypos),str(i.zpos))) 
+                    file.write("\t\t<Winkel Value=%s/>\n" % (str(i.Radius)))
+                    file.write("\t</Quader>\n")
                     k+=1
                 file.write("</Blob_Objects>\n\n")
             file.close()
@@ -201,6 +214,15 @@ class Ball(object):
         self.ypos=ypos
         self.zpos=zpos
         self.Radius =rad
+        return
+
+class BlobQuader(object):
+
+    def __init__(self,xpos,ypos,zpos,beta):
+        self.xpos=xpos
+        self.ypos=ypos
+        self.zpos=zpos
+        self.Winkel =beta
         return
 
 

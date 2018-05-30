@@ -22,7 +22,7 @@ import os
 from XMLIO import *
 from Blob import *
 from _2DImageTo3DCoords import *
-from Simple2DImageto3DCoords import *
+from man2DImageto3DCoords import *
 from SimpleCalibration import *
 import shelve
 
@@ -180,7 +180,8 @@ class MyPanel(Screen):
     posrec =list([200,100])
     listofblobobjects=list()
     listofdetecteddepthobjects=list()
-    listofkeypoints=list();
+    listofballkeypoints=list();
+    listofquaderkeypoints=list();
     def __init__(self, **kwargs):
         super(MyPanel, self).__init__(**kwargs)
         if not os.path.exists(const.rootfolder):
@@ -216,7 +217,7 @@ class MyPanel(Screen):
                 save=True
             else:
                 save=False
-            framewithblob,self.listofkeypoints= self.blob.blobdetection(frame,show,save) 
+            framewithblob,self.listofballkeypoints,self.listofquderkeypoints= self.blob.blobdetection(frame,show,save) 
             texture=self.workpic.ColorFrameToKivyPicture(framewithblob)
         else:
             print("There are no Blob objects defined. Define at leat one"+ 
@@ -226,18 +227,17 @@ class MyPanel(Screen):
         self.bildschirm.Changetexture(texture)
         framemilli,framegrey,waste = self.cam.getpicturedepth()
         del waste, framegrey
-        self.imageto3D.ConvertBalltoCoords(self.listofkeypoints,self.XMLWriter,framemilli)
+        self.imageto3D/load()
+        self.imageto3D.ConvertBalltoCoords(self.listofballkeypoints,self.XMLWriter,framemilli)
+        self.imageto3D.ConvertQuadertoCoords(self.listofquaderkeypoints,self.XMLWriter,framemilli)
         return
-
-    #def Calibratepressed(self):       
-     #   self.calibrate()
-      #  return
     def HeightMapPressed(self):
         self.listofdetecteddepthobjects = list()
         framemilli,framegrey,self.g = self.cam.getpicturedepth()
         texturegrey=self.workpic.DetphFrameToKivyPicture(framegrey)
         self.bildschirm.Changetexture(texturegrey)
         self.listofdetecteddepthobjects = self.workpic.DetectionOfDepthObjects(framemilli,framegrey,self.g)
+        self.imageto3D/load()
         self.imageto3D.ConvertPixQuadertoCoordQuader(self.listofdetecteddepthobjects,self.XMLWriter)
         return
     def WriteOutputPressed(self):
@@ -248,9 +248,7 @@ class MyPanel(Screen):
         self.listofblobobjects=self.XMLReader.getlistofblobobjects()
         del self.blob
         self.blob=Blob(self.listofblobobjects)
-        return
-    def calibrate(self):
-        tp.takedepth()        
+        return      
        
   
 

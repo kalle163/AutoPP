@@ -23,6 +23,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BilderkennungAPP.py" />
+    <Compile Include="Classes\man2DImageto3DCoords.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Classes\Simple2DImageto3DCoords.py">
       <SubType>Code</SubType>
     </Compile>
