@@ -39,16 +39,50 @@ class Bildverarbeitung(object):
         self.texturecolor.blit_buffer(colorframe,bufferfmt='ubyte',colorfmt='bgr')
         return self.texturecolor 
     def DetectionOfDepthObjects(self,framemilli,framegrey,g):
-        #framemilli= UndistortDethFrameMilli(framemilli)
+        caliresult = shelve.open(const.rootfolder+"\CalibrationResults")
+        xyratio = caliresult['xyratio']
+        rot = caliresult['rotation']
+        areaofinterest = caliresult['areaofinterest']
+        caliresult.close()
         show = True   #Set to False to Hide Pictures
         framegrey = cv2.flip(framegrey,1);
         framemilli = cv2.flip(framemilli,1);
         a,b=GetMinDistances(g)
+        framegrey= imutils.rotate(framegrey,rot)
+        framemilli= imutils.rotate(framemilli,rot)
+        if xyratio > 1:
+            framegrey = cv2.resize(framegrey, (0,0), fx=(1/xyratio), fy=1.0) 
+            framemilli = cv2.resize(framemilli, (0,0), fx=(1/xyratio), fy=1.0) 
+        elif xyratio < 1:
+            framegrey= cv2.resize(framegrey, (0,0), fx=1.0, fy=xyratio)
+            framemilli= cv2.resize(framemilli, (0,0), fx=1.0, fy=xyratio)
+      
+        if areaofinterest[0][0] < areaofinterest[2][0]:
+            xleftborder = int(areaofinterest[0][0])*const.ir_image_size[0]/const.rgb_image_size[0]
+        else:
+            xleftborder = int(areaofinterest[2][0])*const.ir_image_size[0]/const.rgb_image_size[0]
+        if areaofinterest[1][0] > areaofinterest[3][0]:
+            xrightborder = int(areaofinterest[1][0])*const.ir_image_size[0]/const.rgb_image_size[0]
+        else:
+            xrightborder = int(areaofinterest[3][0])*const.ir_image_size[0]/const.rgb_image_size[0]
+        if areaofinterest[0][1] < areaofinterest[1][1]:
+            ytopborder = int(areaofinterest[0][1])*const.ir_image_size[1]/const.rgb_image_size[1]
+        else:
+            ytopborder = int(areaofinterest[1][1])*const.ir_image_size[1]/const.rgb_image_size[1]
+        if areaofinterest[2][1] > areaofinterest[3][1]:
+            ybottomborder = int(areaofinterest[2][1])*const.ir_image_size[1]/const.rgb_image_size[1]
+        else:
+            ybottomborder = int(areaofinterest[3][1])*const.ir_image_size[1]/const.rgb_image_size[1]
+        sizevec = framegrey.shape
+        framegrey[:,0:xleftborder] = 0
+        framegrey[:,xrightborder:(sizevec[1]-1)] = 0
+        framegrey[0:ytopborder,:] =0
+        framegrey[ybottomborder:(sizevec[0]-1),:] = 0
         frametherehold = np.zeros(framegrey.shape,dtype='uint8')
         frametherehold = cv2.threshold(framegrey,(255-a),255,cv2.THRESH_TOZERO_INV)
         frametherehold = frametherehold[1]
-        for area in const.NoDetectionArea:
-            frametherehold[area[1]:area[1]+area[3],area[0]:area[0]+area[2]]=np.zeros((area[3],area[2]),dtype='uint8')
+        #for area in const.NoDetectionArea:
+         #   frametherehold[area[1]:area[1]+area[3],area[0]:area[0]+area[2]]=np.zeros((area[3],area[2]),dtype='uint8')
         frametherehold= cv2.medianBlur(frametherehold,5)
         frametherehold = cv2.erode(frametherehold, None, iterations=2)
         frametherehold = cv2.dilate(frametherehold, None, iterations=4)
@@ -56,7 +90,7 @@ class Bildverarbeitung(object):
             cv2.imshow('frametherehold',frametherehold)
             cv2.waitKey(0)
         #cv2.imwrite(const.rootfolder+"/thereholdframe.jpg",frametherehold)
-        mask=frametherehold.copy()       
+        mask=frametherehold.copy()
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0] if imutils.is_cv2() else cnts[1]
         cnts = contours.sort_contours(cnts)[0]
