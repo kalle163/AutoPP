@@ -98,7 +98,7 @@ class SimpleIRCalibrator(object):
         return  areaofinterest
 
     def Distortion(self,x,y):
-        bigxyratio = ((((self.areaofinterest[1][0]-self.areaofinterest[0][0])+(self.areaofinterest[3][0]-self.areaofinterest[2][0]))/2)/const.pattern_size[0])/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/const.pattern_size[1])
+        bigxyratio = ((((self.areaofinterest[1][0]-self.areaofinterest[0][0])+(self.areaofinterest[3][0]-self.areaofinterest[2][0]))/2)/(const.pattern_size[0]-1))/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/(const.pattern_size[1]-1))
         print(bigxyratio)
         self.xyratio = bigxyratio
         if bigxyratio > 1:
@@ -108,10 +108,10 @@ class SimpleIRCalibrator(object):
         return bigxyratio,x,y
 
     def Exit(self):
-        bigxyratio = ((((self.areaofinterest[1][0]-self.areaofinterest[0][0])+(self.areaofinterest[3][0]-self.areaofinterest[2][0]))/2)/const.pattern_size[0])/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/const.pattern_size[1])
+        bigxyratio = ((((self.areaofinterest[1][0]-self.areaofinterest[0][0])+(self.areaofinterest[3][0]-self.areaofinterest[2][0]))/2)/(const.pattern_size[0]-1))/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/(const.pattern_size[1]-1))
         print(bigxyratio)
-        xlenperpix = const.square_size/((((self.areaofinterest[1][0]-self.areaofinterest[0][0])+(self.areaofinterest[3][0]-self.areaofinterest[2][0]))/2)/const.pattern_size[0])
-        ylenperpix = const.square_size/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/const.pattern_size[1])
+        xlenperpix = const.square_size/((((self.areaofinterest[1][0]-self.areaofinterest[0][0])+(self.areaofinterest[3][0]-self.areaofinterest[2][0]))/2)/(const.pattern_size[0]-1))
+        ylenperpix = const.square_size/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/(const.pattern_size[1]-1))
         return xlenperpix, ylenperpix
 
     def takedepth(self,x,y,rot):

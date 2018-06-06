@@ -57,7 +57,7 @@ class XMLWriter(object):
                 for i in self.listofblobquader:
                     file.write("\t<Quader Nr=%s >\n" % (k))
                     file.write("\t\t<Position x=%s y=%s z=%s/>\n" % (str(i.xpos),str(i.ypos),str(i.zpos))) 
-                    file.write("\t\t<Winkel Value=%s/>\n" % (str(i.Radius)))
+                    file.write("\t\t<Winkel Value=%s/>\n" % (str(i.Winkel)))
                     file.write("\t</Quader>\n")
                     k+=1
                 file.write("</Blob_Objects>\n\n")
@@ -224,5 +224,3 @@ class BlobQuader(object):
         self.zpos=zpos
         self.Winkel =beta
         return
-
-

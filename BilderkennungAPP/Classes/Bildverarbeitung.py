@@ -42,11 +42,24 @@ class Bildverarbeitung(object):
         cv2.waitKey(0)
         localcolorframe = colorframe[int(area[0][1]):int(area[2][1]),int(area[0][0]):int(area[1][0]),:]
         localcolorframe = cv2.flip(localcolorframe,0);
-        cv2.imshow("bla",localcolorframe)
+        shp = localcolorframe.shape
+        if shp[0]*16/9 > shp[1]:
+            newlocalcolorframe= np.ones((shp[0],int(shp[0]*16/9),3),dtype=np.uint8)*255
+            newshp=newlocalcolorframe.shape
+            startmidle = (newshp[1]-shp[1])/2
+            newlocalcolorframe[0:shp[0],startmidle:shp[1]+startmidle,:]=localcolorframe
+        elif shp[1]*9/16 > shp[0]:
+            newlocalcolorframe= np.ones((int(shp[1]*9/16),shp[1],3),dtype=np.uint8)*255
+            newshp=newlocalcolorframe.shape
+            startmidle = (newshp[0]-shp[0])/2
+            newlocalcolorframe[startmidle:shp[0]+startmidle,0:shp[1],:]=localcolorframe
+        else:
+            newshp=shp
+        cv2.imshow("bla",newlocalcolorframe)
         cv2.waitKey(0)
-        localcolorframe = localcolorframe.reshape((int(area[2][1])-int(area[0][1]))*(int(area[1][0])-int(area[0][0]))*3)
-        texturecolor = Texture.create(size=(int(area[1][0])-int(area[0][0]),int(area[2][1])-int(area[0][1])),colorfmt='bgr')
-        texturecolor.blit_buffer(localcolorframe,bufferfmt='ubyte',colorfmt='bgr')
+        newlocalcolorframe = newlocalcolorframe.reshape(np.prod(newshp))
+        texturecolor = Texture.create(size=(newshp[1],newshp[0]),colorfmt='bgr')
+        texturecolor.blit_buffer(newlocalcolorframe,bufferfmt='ubyte',colorfmt='bgr')
         caliresult.close()
         return texturecolor 
     def DetectionOfDepthObjects(self,framemilli,framegrey,g):

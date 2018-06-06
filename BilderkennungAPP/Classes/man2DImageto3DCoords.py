@@ -61,6 +61,6 @@ class Simple2DImageto3DCoords(object):
             y = int(keypoint.pt[1])
             #z = depthframe[x,y]
             Point = self.__Calculate3DPoint__(x,y)
-            XMLWriter.AddNewBall(Point[0],Point[1],0,0)
+            XMLWriter.AddNewBlobQuader(Point[0],Point[1],0,0)
         return
 
