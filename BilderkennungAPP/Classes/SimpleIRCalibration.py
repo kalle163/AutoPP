@@ -1,3 +1,4 @@
+
 import cv2
 from pykinect2 import PyKinectV2
 from pykinect2.PyKinectV2 import *
@@ -8,10 +9,10 @@ import time
 from kivy.graphics.texture import Texture
 import imutils
 
-class SimpleCalibrator(object):
+class SimpleIRCalibrator(object):
     def __init__(self):
         self.xyratio=1.0
-        return super(SimpleCalibrator, self).__init__()
+        return super(SimpleIRCalibrator, self).__init__()
 
     def takePicture(self,chessboard):
         kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color |
@@ -19,13 +20,14 @@ class SimpleCalibrator(object):
                                          PyKinectV2.FrameSourceTypes_Depth)
         pictureok = False
         while not pictureok: 
-            cv2.namedWindow('RGB',cv2.WINDOW_NORMAL)
-            cv2.resizeWindow('RGB', const.screenresolution)
+            #cv2.namedWindow('image',WINDOW_NORMAL)
+            #cv2.resizeWindow('image', 600,600)
             while(cv2.waitKey(1) != 27):#wait ESC press
-                colorFrame = kinect.get_last_color_frame()
-                colorFrame = colorFrame.reshape(const.rgb_image_size[1],const.rgb_image_size[0],4)
+                colorFrame = kinect.get_last_infrared_frame()
+                colorFrame = colorFrame.reshape(const.ir_image_size[0],const.ir_image_size[1])
                 colorFrame = cv2.flip(colorFrame,+1);
-                cv2.imshow('RGB',colorFrame) 
+                colorFrame = np.uint8(colorFrame/256)
+                cv2.imshow('IR',colorFrame) 
             if not chessboard:
                 pictureok = True
             found, corners = cv2.findChessboardCorners(colorFrame, const.pattern_size, flags=cv2.CALIB_CB_ADAPTIVE_THRESH)
@@ -36,22 +38,23 @@ class SimpleCalibrator(object):
                 pictureok = True
             else:
                 print("Dont found chessboard in rgb frame. Repeat recording Picture")
+            depthframe = kinect.get_last_depth_frame()
+            depthframe = depthframe.reshape(const.ir_image_size[0],const.ir_image_size[1])
+            depthframe= cv2.flip(depthframe,+1);
     
         cv2.destroyAllWindows()
+        colorFrame = cv2.cvtColor(colorFrame,cv2.COLOR_GRAY2BGRA)
         self.colorframe = colorFrame
+        self.depthframe =depthframe
         return 
 
     def PictureWithCross(self,rot,x,y):
          localcolorframe = self.colorframe.copy()
          localcolorframe = imutils.rotate(localcolorframe,rot)
-         for k in range(-30,30):
-             localcolorframe[y+k,x-1,:]=(0,0,255,255)
+         for k in range(-20,20):
              localcolorframe[y+k,x,:]=(0,0,255,255)
-             localcolorframe[y+k,x+1,:]=(0,0,255,255)
-         for k in range(-30,30):
-             localcolorframe[y-1,x+k,:]=(0,0,255,255)
+         for k in range(-20,20):
              localcolorframe[y,x+k,:]=(0,0,255,255)
-             localcolorframe[y+1,x+k,:]=(0,0,255,255)
          return _ColorFrameToKivyPicture_(localcolorframe)
    
 
@@ -64,8 +67,6 @@ class SimpleCalibrator(object):
             image = cv2.resize(image, (0,0), fx=1.0, fy=self.xyratio) 
         color_image = image.copy()
         image = cv2.cvtColor(image,cv2.COLOR_BGRA2GRAY)
-        cv2.namedWindow('Color',cv2.WINDOW_NORMAL)
-        cv2.resizeWindow('Color', const.screenresolution)
         cv2.imshow('Color',image)
         cv2.waitKey(0)
         debug_images = []
@@ -88,11 +89,9 @@ class SimpleCalibrator(object):
             print(areaofinterest)
             self.areaofinterest = areaofinterest
             self.sortedcorners = _SortCorners_(corners)
-            cv2.namedWindow('Cornor',cv2.WINDOW_NORMAL)
-            cv2.resizeWindow('Cornor', const.screenresolution)
             cv2.imshow('Corner',color_image)
             cv2.waitKey(0)
-            cv2.imwrite(const.rootfolder+"\Chessbaord.jpg",color_image)
+            cv2.imwrite(const.rootfolder+"\IRChessbaord.jpg",color_image)
         else:
             print("Chessboard not found. No Area of Interst defined")
             areaofinterest = 0
@@ -115,6 +114,15 @@ class SimpleCalibrator(object):
         ylenperpix = const.square_size/((((self.areaofinterest[2][1]-self.areaofinterest[0][1])+(self.areaofinterest[3][1]-self.areaofinterest[1][1]))/2)/const.pattern_size[1])
         return xlenperpix, ylenperpix
 
+    def takedepth(self,x,y,rot):
+        image = self.depthframe.copy()
+        image = imutils.rotate(image,rot)
+        if self.xyratio > 1:
+            image = cv2.resize(image, (0,0), fx=(1/self.xyratio), fy=1.0) 
+        elif self.xyratio < 1:
+            image = cv2.resize(image, (0,0), fx=1.0, fy=self.xyratio) 
+        depth = image[x,y]
+        return depth 
 
 
 def _SortAreaOfInterest_(localareaofinterest):
@@ -161,10 +169,10 @@ def _SortAreaOfInterest_(localareaofinterest):
     return areaofinterest
 
 def _ColorFrameToKivyPicture_(colorframe):
-        texturecolor = Texture.create(size=(1920,1080),colorfmt='bgr')
+        texturecolor = Texture.create(size=(512,424),colorfmt='bgr')
         colorframe= cv2.cvtColor(colorframe,cv2.COLOR_BGRA2BGR)
         colorframe = cv2.flip(colorframe,0);
-        colorframe = colorframe.reshape(1080*1920*3)
+        colorframe = colorframe.reshape(424*512*3)
         texturecolor.blit_buffer(colorframe,bufferfmt='ubyte',colorfmt='bgr')
         return texturecolor 
 

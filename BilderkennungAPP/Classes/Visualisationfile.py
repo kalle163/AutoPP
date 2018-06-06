@@ -7,6 +7,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.slider import Slider
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
+from kivy.factory import Factory
 from cameraCV import *
 from kivy.properties import ObjectProperty, ListProperty, StringProperty
 from kivy.clock import Clock
@@ -24,8 +25,8 @@ from Blob import *
 from _2DImageTo3DCoords import *
 from man2DImageto3DCoords import *
 from SimpleCalibration import *
+from SimpleIRCalibration import *
 import shelve
-
 def ChangeSavePathInConst(path,deletestate):
     if deletestate == 'down':
         if os.path.exists(const.rootfolder):
@@ -79,14 +80,14 @@ class MyCaliPopup(Popup):
             else:
                 self.areaofinterest = 0
             if self.checkbox3.state  == 'down':
-               self.xyratio,self.xvalue,self.yvalue  = self.simcal.Distortion(self.xvalue,self.yvalue)
-               self.areaofinterest = self.simcal.find_points(self.rotvalue)
-               self.xlenperpix,self.ylenperpix = self.simcal.Exit()
+                self.xyratio,self.xvalue,self.yvalue  = self.simcal.Distortion(self.xvalue,self.yvalue)
+                self.areaofinterest = self.simcal.find_points(self.rotvalue)
+                self.xlenperpix,self.ylenperpix = self.simcal.Exit()
             else:
                 self.xlenperpix = 0
                 self.ylenperpix = 0
-        self._SaveResults_()
-        self.dismiss()
+            self._SaveResults_()
+            self.dismiss()
         return
     def ChessboardChange(self):
         if self.checkbox.state == 'down':
@@ -159,6 +160,131 @@ class MyCaliPopup(Popup):
 
         return
 
+class MyIRCaliPopup(Popup):
+    def __init__(self, **kwargs):
+        self.simcal = SimpleIRCalibrator()
+        self.init = False
+        return super(MyIRCaliPopup, self).__init__(**kwargs)
+
+    def ResetPicture(self):
+        if self.checkbox.state == 'down':
+            chessboard= True
+        else:
+            chessboard = False
+        self.simcal.takePicture(chessboard)
+        self._GetActualValues_()
+        texture=self.simcal.PictureWithCross(self.rotvalue,self.xvalue,self.yvalue)
+        self.bildschirm.Changetexture(texture)
+        self.resetpic.text = "Reset Picture"
+        self.init = True
+        return
+    def SaveCalibration(self):
+        if self.checkbox.state == 'down':
+            areaofinterest = self.simcal.find_points(self.rotvalue)
+            if self.checkbox2.state == 'down':
+                self.areaofinterest = areaofinterest
+            else:
+                self.areaofinterest = 0
+            if self.checkbox3.state  == 'down':
+                self.xyratio,self.xvalue,self.yvalue  = self.simcal.Distortion(self.xvalue,self.yvalue)
+                self.areaofinterest = self.simcal.find_points(self.rotvalue)
+                self.xlenperpix,self.ylenperpix = self.simcal.Exit()
+            else:
+                self.xlenperpix = 0
+                self.ylenperpix = 0
+            self.depth = self.simcal.takedepth(self.xvalue,self.yvalue,self.rotvalue)
+            self._SaveResults_()
+            self._CalculateIRtoRGB_()
+            self.dismiss()
+        return
+    def ChessboardChange(self):
+        if self.checkbox.state == 'down':
+            pass
+        else:
+            self.checkbox2.state = 'normal'
+            self.checkbox3.state = 'normal'
+    def OnTouchMove(self):
+        if self.init:
+            self._SetSilderToNumeric_()
+            self._RefreshPicture_()
+        return
+    def NumericChange(self):
+        if self.init:
+            self._SetNumericToSlider_()
+            self._RefreshPicture_()
+        return
+    def _GetActualValues_(self):
+        x = int(self.sliderhor.value)
+        y = int(self.sliderver.value)
+        rot = int(self.sliderrot.value)
+        y=423-y
+        self.xvalue=x
+        self.yvalue=y
+        self.rotvalue=rot
+        return
+    def _RefreshPicture_(self):
+        self._GetActualValues_()
+        texture=self.simcal.PictureWithCross(self.rotvalue,self.xvalue,self.yvalue)
+        self.bildschirm.Changetexture(texture)
+        return
+    def _SetSilderToNumeric_(self):
+        x = int(self.sliderhor.value)
+        y = int(self.sliderver.value)
+        rot = int(self.sliderrot.value)
+        y=423-y
+        self.numerichor.text=str(x)
+        self.numericver.text=str(y)
+        self.numericrot.text=str(rot)
+        return
+    def _SetNumericToSlider_(self):
+        x = int(self.numerichor.text)
+        y = int(self.numericver.text)
+        rot = int(self.numericrot.text)
+        y=423-y
+        if x > 512-32:
+            x=512-32
+        if x < 31:
+            x=31
+        if y > 424-32:
+            x=424-32
+        if y < 31:
+            y=31
+        if rot > 359:
+            rot=359
+        if rot < 0:
+            rot=0
+        self.sliderhor.value=x
+        self.sliderver.value=y
+        self.sliderrot.value=rot
+        return
+    def _SaveResults_(self):
+        caliresult = shelve.open(const.rootfolder+"\IRCalibrationResults", 'n')
+        caliresult['areaofinterest'] = self.areaofinterest
+        caliresult['rotation'] =  self.rotvalue
+        caliresult['pointzero'] = np.array([self.xvalue,self.yvalue])
+        caliresult['lenperpix'] =np.array([self.xlenperpix,self.ylenperpix])
+        caliresult['xyratio'] = self.xyratio
+        caliresult['depth'] = self.depth 
+        caliresult.close()
+
+    def _CalculateIRtoRGB_(self):
+        ircaliresult = shelve.open(const.rootfolder+"\IRCalibrationResults")
+        caliresult = shelve.open(const.rootfolder+"\CalibrationResults")
+        irarea = ircaliresult['areaofinterest'] 
+        area = caliresult['areaofinterest'] 
+        xtransform = (irarea[1][0]-irarea[0][0])/(area[1][0]-area[0][0])
+        irxtransform =1/xtransform
+        ytransform = (irarea[2][1]-irarea[0][1])/(area[2][1]-area[0][1])
+        irytransform =1/ytransform
+        caliresult['transform'] = np.array([xtransform,ytransform])
+        ircaliresult['transform'] = np.array([irxtransform,irytransform])
+        caliresult.close()
+        ircaliresult.close()
+        return
+
+
+        return
+
 
 class Bildschirm(Widget):
     texture = ObjectProperty(None)
@@ -184,10 +310,6 @@ class MyPanel(Screen):
     listofquaderkeypoints=list();
     def __init__(self, **kwargs):
         super(MyPanel, self).__init__(**kwargs)
-        if not os.path.exists(const.rootfolder):
-           neuenOrdneranlegen(const.rootfolder)
-        if not os.path.exists(const.rootfolder+"/distancetoground.npy"):
-            self.calibrate()
         self.cam =CameraPyKinectCV()
         self.workpic =Bildverarbeitung()
         self.XMLWriter = XMLWriter()
@@ -217,7 +339,7 @@ class MyPanel(Screen):
                 save=True
             else:
                 save=False
-            framewithblob,self.listofballkeypoints,self.listofquderkeypoints= self.blob.blobdetection(frame,show,save) 
+            framewithblob,self.listofballkeypoints,self.listofquaderkeypoints= self.blob.blobdetection(frame,show,save) 
             texture=self.workpic.ColorFrameToKivyPicture(framewithblob)
         else:
             print("There are no Blob objects defined. Define at leat one"+ 
@@ -227,7 +349,7 @@ class MyPanel(Screen):
         self.bildschirm.Changetexture(texture)
         framemilli,framegrey,waste = self.cam.getpicturedepth()
         del waste, framegrey
-        self.imageto3D/load()
+        self.imageto3D.load()
         self.imageto3D.ConvertBalltoCoords(self.listofballkeypoints,self.XMLWriter,framemilli)
         self.imageto3D.ConvertQuadertoCoords(self.listofquaderkeypoints,self.XMLWriter,framemilli)
         return
@@ -248,9 +370,14 @@ class MyPanel(Screen):
         self.listofblobobjects=self.XMLReader.getlistofblobobjects()
         del self.blob
         self.blob=Blob(self.listofblobobjects)
-        return      
-       
+        return
+    def CalibratePressed(self):
+        Factory.MyIRCaliPopup().open()
+        Factory.MyCaliPopup().open()
   
+        return
+       
+
 
 class MyPanelApp(App):
     def build(self):

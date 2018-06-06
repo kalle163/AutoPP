@@ -32,6 +32,9 @@
     <Compile Include="Classes\SimpleCalibration.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Classes\SimpleIRCalibration.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Classes\_2DImageTo3DCoords.py">
       <SubType>Code</SubType>
     </Compile>

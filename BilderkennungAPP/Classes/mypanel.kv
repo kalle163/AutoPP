@@ -10,7 +10,7 @@
     id: mycalipopup
     auto_dismiss: False
     size_hint: None, None
-    size: 1423, 800
+    size: 1350, 760
     title: "Calibration"
 	bildschirm: bildschirm
 	sliderrot: sliderrot
@@ -135,6 +135,134 @@
             size_hint: 0.04, 0.04
 
 
+<MyIRCaliPopup@Popup>:
+    id: myircalipopup
+    auto_dismiss: False
+    size_hint: None, None
+    size: 1010, 760
+    title: "Calibration"
+	bildschirm: bildschirm
+	sliderrot: sliderrot
+	sliderhor: sliderhor
+	sliderver: sliderver
+	numerichor: numerichor
+	numericver: numericver
+	numericrot: numericrot
+	resetpic: resetpic
+	checkbox: checkbox
+	checkbox3: checkbox3
+	checkbox2: checkbox2
+    FloatLayout:        
+        id:floatlayoutpopup
+		Bildschirm:
+            id: bildschirm
+            pos_hint: {'x':0.2, 'top':0.99}
+            size_hint: 0.8, 0.9
+		Slider:
+			id: sliderhor
+			pos_hint: {'x':0.2, 'top':0.08}
+			size_hint: 0.5, 0.05
+			min:31
+			max:481
+			value:255
+			step: 1
+			on_value: root.OnTouchMove()
+		Slider:
+			id: sliderver
+			orientation: "vertical"
+			pos_hint: {'x':0.04, 'top':0.9}
+			size_hint: 0.1, 0.6
+			min:31
+			max:393
+			value:211
+			step: 1
+			on_value: root.OnTouchMove()
+		Button:
+			id: resetpic
+			pos_hint: {'x':0.78, 'top':0.07}
+			size_hint: 0.1, 0.06
+			text: "Take Picture"
+			on_release: root.ResetPicture()
+		Button:
+			id: completecali
+			pos_hint: {'x':0.89, 'top':0.07}
+			size_hint: 0.1, 0.06
+			text: "Save Calibration"
+			on_release: root.SaveCalibration()
+		NumericInput:
+			id: numerichor
+			pos_hint: {'x':0.72, 'top':0.07}
+			size_hint: 0.05, 0.04
+			text: "255"
+			on_text: root.NumericChange()
+		NumericInput:
+			id: numericver
+			pos_hint: {'x':0.04, 'top':0.93}
+			size_hint: 0.1, 0.04
+			text:"211"
+			on_text: root.NumericChange()
+		Label:
+            id: labelhor
+            text:"Displacement x-Direction"
+            pos_hint: {'x':0.51, 'top':0.04}
+            size_hint: 0.2, 0.04
+		Label:
+            id: labelver
+            text:"Displacement\ny-Direction"
+            pos_hint: {'x':0.01, 'top':0.99}
+            size_hint: 0.16, 0.05
+		Label:
+            id: labelrot
+            text:"Rotation \nAnti-Clockwised"
+            pos_hint: {'x':0.01, 'top':0.31}
+            size_hint: 0.16, 0.05
+		Slider:
+			id: sliderrot
+			pos_hint: {'x':0.005, 'top':0.26}
+			size_hint: 0.19, 0.05
+			min:0
+			max:359
+			value:0
+			on_value: root.OnTouchMove()
+			step: 1
+		NumericInput:
+			id: numericrot
+			pos_hint: {'x':0.04, 'top':0.21}
+			size_hint: 0.1, 0.04
+			text: "0"
+			on_text: root.NumericChange()
+		Label:
+            id: labelcheck
+            text:"Chessbaord:"
+            pos_hint: {'x':0.0, 'top':0.15}
+            size_hint: 0.16, 0.04
+		CheckBox:
+            id: checkbox
+            state: 'down'
+            pos_hint: {'x':0.12, 'top':0.15}
+            size_hint: 0.04, 0.04
+			on_state: root.ChessboardChange()
+		Label:
+            id: labelcheck2
+            text:"auto AOI:"
+            pos_hint: {'x':0.0, 'top':0.1}
+            size_hint: 0.16, 0.04
+		CheckBox:
+            id: checkbox2
+            state: 'down'
+            pos_hint: {'x':0.12, 'top':0.1}
+            size_hint: 0.04, 0.04
+		Label:
+            id: labelcheck3
+            text:"Distortion:"
+            pos_hint: {'x':0.0, 'top':0.05}
+            size_hint: 0.16, 0.04
+		CheckBox:
+            id: checkbox3
+            state: 'down'
+            pos_hint: {'x':0.12, 'top':0.05}
+            size_hint: 0.04, 0.04
+
 
 <MyPopup@Popup>:
     id: mypopup
@@ -182,6 +310,7 @@
 
 <MyPanel>
     name: "myPanel"
+    size: 1350, 760
     bildschirm: bildschirm
     showcheckbox: showcheckbox
     savecheckbox: savecheckbox
@@ -189,10 +318,10 @@
         id: floatlayout1
         Button:
             id: greybild
-            text: "Combined Image"
+            text: "Read Input.xml"
             pos_hint: {'x':0.005, 'top':0.99}
             size_hint: 0.2, 0.1
-            on_press: root.GreyBildpressed()
+            on_release: root.ReadInputPressed()
         Button:
             id: rgbbild
             text: "Blob at rgb"
@@ -228,7 +357,7 @@
             text: "Calibrate"
             pos_hint: {'x':0.005, 'top':0.55}
             size_hint: 0.2, 0.1
-            on_press: Factory.MyCaliPopup().open()
+            on_press: root.CalibratePressed()                  
         Button: 
             id: changepath
             text: "Change Path"
@@ -241,16 +370,11 @@
             pos_hint: {'x':0.005, 'top':0.31}
             size_hint: 0.2,0.1
             on_release: root.WriteOutputPressed()
-        Button: 
-            id: readinput
-            text: "Read Input.xml"
-            pos_hint: {'x':0.005, 'top':0.19}
-            size_hint: 0.2,0.1
-            on_release: root.ReadInputPressed()
         Bildschirm:
             id: bildschirm
             pos_hint: {'x':0.23, 'top':0.99}
-            size_hint: 0.75, 0.97
+            size_hint: 0.75, 0.78
+	
    
 
             

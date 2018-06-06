@@ -23,21 +23,32 @@ class RectanglePixel(object):
 class Bildverarbeitung(object):
 
     texturedepth = Texture.create(size=(512,424),colorfmt='bgr')
-    texturecolor = Texture.create(size=(1920,1080),colorfmt='bgr')
     def __init__(self, *args, **kwargs):
         return super(Bildverarbeitung, self).__init__(*args, **kwargs)
     def DetphFrameToKivyPicture(self,depthframe):
         depthframe = cv2.flip(depthframe,0);
+        ircaliresult = shelve.open(const.rootfolder+"\IRCalibrationResults")
+        irarea = ircaliresult['areaofinterest'] 
         depthframe = depthframe.reshape(424*512)
         depthframe=cv2.cvtColor(depthframe,cv2.COLOR_GRAY2BGR)
         depthframe = depthframe.reshape(424*512*3)
         self.texturedepth.blit_buffer(depthframe,bufferfmt='ubyte',colorfmt='bgr')
+        ircaliresult.close()
         return self.texturedepth
     def ColorFrameToKivyPicture(self,colorframe):
-        colorframe = cv2.flip(colorframe,0);
-        colorframe = colorframe.reshape(1080*1920*3)
-        self.texturecolor.blit_buffer(colorframe,bufferfmt='ubyte',colorfmt='bgr')
-        return self.texturecolor 
+        caliresult = shelve.open(const.rootfolder+"\CalibrationResults")
+        area = caliresult['areaofinterest'] 
+        cv2.imshow("bla",colorframe)
+        cv2.waitKey(0)
+        localcolorframe = colorframe[int(area[0][1]):int(area[2][1]),int(area[0][0]):int(area[1][0]),:]
+        localcolorframe = cv2.flip(localcolorframe,0);
+        cv2.imshow("bla",localcolorframe)
+        cv2.waitKey(0)
+        localcolorframe = localcolorframe.reshape((int(area[2][1])-int(area[0][1]))*(int(area[1][0])-int(area[0][0]))*3)
+        texturecolor = Texture.create(size=(int(area[1][0])-int(area[0][0]),int(area[2][1])-int(area[0][1])),colorfmt='bgr')
+        texturecolor.blit_buffer(localcolorframe,bufferfmt='ubyte',colorfmt='bgr')
+        caliresult.close()
+        return texturecolor 
     def DetectionOfDepthObjects(self,framemilli,framegrey,g):
         caliresult = shelve.open(const.rootfolder+"\CalibrationResults")
         xyratio = caliresult['xyratio']

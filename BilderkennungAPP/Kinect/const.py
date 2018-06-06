@@ -21,3 +21,4 @@ distanceobjecttoobject=  60        # in mm
 NoDetectionArea = [[0,280,512,424-280],[430,120,512-430,424-120],[0,0,120,424]]  # for depth detection in pixel [x,y,width,height] [0,0] = top left corner
 fovofkinectv2depth =(60,70.6)  #in degree
 fovofkinectv2rgb=(53.8,84.1)   #in degree
+screenresolution =(1920,1080)

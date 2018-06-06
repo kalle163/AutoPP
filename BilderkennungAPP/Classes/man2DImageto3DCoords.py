@@ -18,7 +18,7 @@ class Simple2DImageto3DCoords(object):
         caliresult.close()
 
     def __Calculate3DPoint__(self,x,y):
-        Point = np.zeros(2,1)
+        Point = np.zeros((2,1),dtype=float)
         Point[0] = (x-self.pointzero[0])*self.lenperpix[0]
         Point[1] = (y-self.pointzero[1])*self.lenperpix[1]
         return Point
@@ -61,6 +61,6 @@ class Simple2DImageto3DCoords(object):
             y = int(keypoint.pt[1])
             #z = depthframe[x,y]
             Point = self.__Calculate3DPoint__(x,y)
-            XMLWriter.AddNewBall(Point[0],Point[1],Point[2],rad)
+            XMLWriter.AddNewBall(Point[0],Point[1],0,0)
         return
 
