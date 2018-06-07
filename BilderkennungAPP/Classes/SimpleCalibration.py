@@ -88,8 +88,8 @@ class SimpleCalibrator(object):
             print(areaofinterest)
             self.areaofinterest = areaofinterest
             self.sortedcorners = _SortCorners_(corners)
-            cv2.namedWindow('Cornor',cv2.WINDOW_NORMAL)
-            cv2.resizeWindow('Cornor', const.screenresolution)
+            cv2.namedWindow('Corner',cv2.WINDOW_NORMAL)
+            cv2.resizeWindow('Corner', const.screenresolution)
             cv2.imshow('Corner',color_image)
             cv2.waitKey(0)
             cv2.imwrite(const.rootfolder+"\Chessbaord.jpg",color_image)

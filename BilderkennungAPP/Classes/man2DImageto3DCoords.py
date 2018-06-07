@@ -12,9 +12,13 @@ class Simple2DImageto3DCoords(object):
 
     def load(self):
         caliresult = shelve.open(const.rootfolder+"\CalibrationResults")
-        self.distancetoground= np.load(const.rootfolder+"/distancetoground.npy")
         self.lenperpix = caliresult['lenperpix']
         self.pointzero = caliresult['pointzero']
+        caliresult.close()
+        caliresult = shelve.open(const.rootfolder+"\IRCalibrationResults")
+        self.distancetoground= caliresult['depth']
+        self.irlenperpix = caliresult['lenperpix']
+        self.irpointzero = caliresult['pointzero']
         caliresult.close()
 
     def __Calculate3DPoint__(self,x,y):
@@ -22,21 +26,21 @@ class Simple2DImageto3DCoords(object):
         Point[0] = (x-self.pointzero[0])*self.lenperpix[0]
         Point[1] = (y-self.pointzero[1])*self.lenperpix[1]
         return Point
+    def __Calculate3DPointIR__(self,x,y):
+        Point = np.zeros((2,1),dtype=float)
+        Point[0] = (x-self.irpointzero[0])*self.irlenperpix[0]
+        Point[1] = (y-self.irpointzero[1])*self.irlenperpix[1]
+        return Point
+
 
     def ConvertPixQuadertoCoordQuader(self,listofquaders,XMLWriter):
         if not listofquaders:
             return
         for quader in listofquaders:
-            x1= quader.x
-            y1= quader.y
-            z= quader.height
-            print (str(x1-(const.ir_image_size[0]/2))+"   "+str(y1-(const.ir_image_size[1]/2))+"    "+str(z))
-            x2 =quader.x+quader.widthx
-            y2 =quader.y+quader.widthy
-            if not z==0:
-                Point1=self.__Calculate3DPoint__(x1,y1,z)
-                Point2=self.__Calculate3DPoint__(x2,y2,z)
-                XMLWriter.AddNewQuader(Point1[0],Point1[1],0,abs(Point1[0]-Point2[0]),abs(Point1[1]-Point2[1]),Point1[2])
+                Point=self.__Calculate3DPointIR__(quader.x,quader.y)
+                w = quader.widthx*self.irlenperpix[0]
+                h = quader.widthy*self.irlenperpix[1]
+                XMLWriter.AddNewQuader(Point[0],Point[1],0,w,h,quader.height,quader.angle)
         return
 
     def ConvertBalltoCoords(self,listofballs,XMLWriter,depthframe):

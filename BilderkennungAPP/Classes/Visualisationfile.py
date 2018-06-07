@@ -359,7 +359,7 @@ class MyPanel(Screen):
         texturegrey=self.workpic.DetphFrameToKivyPicture(framegrey)
         self.bildschirm.Changetexture(texturegrey)
         self.listofdetecteddepthobjects = self.workpic.DetectionOfDepthObjects(framemilli,framegrey,self.g)
-        self.imageto3D/load()
+        self.imageto3D.load()
         self.imageto3D.ConvertPixQuadertoCoordQuader(self.listofdetecteddepthobjects,self.XMLWriter)
         return
     def WriteOutputPressed(self):

@@ -10,8 +10,8 @@ class XMLWriter(object):
     def __init__(self, *args, **kwargs):
         return super(XMLWriter, self).__init__(*args, **kwargs)
 
-    def AddNewQuader(self,xpos,ypos,zpos,xlen,ylen,zlen):
-        quader = Quader(xpos,ypos,zpos,xlen,ylen,zlen)
+    def AddNewQuader(self,xpos,ypos,zpos,xlen,ylen,zlen,angle):
+        quader = Quader(xpos,ypos,zpos,xlen,ylen,zlen,angle)
         self.listofquader.append(quader)
         return
 
@@ -41,6 +41,7 @@ class XMLWriter(object):
                     file.write("\t<Quader Nr=%s >\n" % (str(k)))
                     file.write("\t\t<Position x=%s y=%s z=%s/>\n" % (str(i.xpos),str(i.ypos),str(i.zpos)))
                     file.write("\t\t<Length x=%s y=%s z=%s/>\n" % (str(i.xlen),str(i.ylen),str(i.zlen)))
+                    file.write("\t\t<Angle Value=%s/>\n" % (str(i.angle)))
                     file.write("\t</Quader>\n")
                     k+=1
                 file.write("</Barriers>\n\n")
@@ -57,7 +58,7 @@ class XMLWriter(object):
                 for i in self.listofblobquader:
                     file.write("\t<Quader Nr=%s >\n" % (k))
                     file.write("\t\t<Position x=%s y=%s z=%s/>\n" % (str(i.xpos),str(i.ypos),str(i.zpos))) 
-                    file.write("\t\t<Winkel Value=%s/>\n" % (str(i.Winkel)))
+                    file.write("\t\t<Angle Value=%s/>\n" % (str(i.Winkel)))
                     file.write("\t</Quader>\n")
                     k+=1
                 file.write("</Blob_Objects>\n\n")
@@ -198,13 +199,14 @@ class BlobObject(object):
 
 class Quader(object):
     
-    def __init__(self,xpos,ypos,zpos,xlen,ylen,zlen):
+    def __init__(self,xpos,ypos,zpos,xlen,ylen,zlen,angle):
         self.xpos=xpos
         self.ypos=ypos
         self.zpos=zpos
         self.xlen=xlen
         self.ylen=ylen
         self.zlen=zlen
+        self.angle=angle
         return
 
 class Ball(object):

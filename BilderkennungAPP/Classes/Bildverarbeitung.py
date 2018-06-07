@@ -7,16 +7,18 @@ from imutils import contours
 from skimage import measure
 import imutils
 import shelve
+import math 
 
 
 class RectanglePixel(object):
 
-    def __init__(self,x,y,widthx,widthy,height):
+    def __init__(self,x,y,widthx,widthy,height,angle):
         self.x=x
         self.y=y
         self.widthx=widthx
         self.widthy=widthy
         self.height=height
+        self.angle=angle
         return 
 
 
@@ -29,7 +31,7 @@ class Bildverarbeitung(object):
         depthframe = cv2.flip(depthframe,0);
         ircaliresult = shelve.open(const.rootfolder+"\IRCalibrationResults")
         irarea = ircaliresult['areaofinterest'] 
-        depthframe = depthframe.reshape(424*512)
+        #depthframe = depthframe.reshape(424*512)
         depthframe=cv2.cvtColor(depthframe,cv2.COLOR_GRAY2BGR)
         depthframe = depthframe.reshape(424*512*3)
         self.texturedepth.blit_buffer(depthframe,bufferfmt='ubyte',colorfmt='bgr')
@@ -63,7 +65,7 @@ class Bildverarbeitung(object):
         caliresult.close()
         return texturecolor 
     def DetectionOfDepthObjects(self,framemilli,framegrey,g):
-        caliresult = shelve.open(const.rootfolder+"\CalibrationResults")
+        caliresult = shelve.open(const.rootfolder+"\IRCalibrationResults")
         xyratio = caliresult['xyratio']
         rot = caliresult['rotation']
         areaofinterest = caliresult['areaofinterest']
@@ -82,32 +84,36 @@ class Bildverarbeitung(object):
             framemilli= cv2.resize(framemilli, (0,0), fx=1.0, fy=xyratio)
       
         if areaofinterest[0][0] < areaofinterest[2][0]:
-            xleftborder = int(areaofinterest[0][0])*const.ir_image_size[0]/const.rgb_image_size[0]
+            xleftborder = int(areaofinterest[0][0])
         else:
-            xleftborder = int(areaofinterest[2][0])*const.ir_image_size[0]/const.rgb_image_size[0]
+            xleftborder = int(areaofinterest[2][0])
         if areaofinterest[1][0] > areaofinterest[3][0]:
-            xrightborder = int(areaofinterest[1][0])*const.ir_image_size[0]/const.rgb_image_size[0]
+            xrightborder = int(areaofinterest[1][0])
         else:
-            xrightborder = int(areaofinterest[3][0])*const.ir_image_size[0]/const.rgb_image_size[0]
+            xrightborder = int(areaofinterest[3][0])
         if areaofinterest[0][1] < areaofinterest[1][1]:
-            ytopborder = int(areaofinterest[0][1])*const.ir_image_size[1]/const.rgb_image_size[1]
+            ytopborder = int(areaofinterest[0][1])
         else:
-            ytopborder = int(areaofinterest[1][1])*const.ir_image_size[1]/const.rgb_image_size[1]
+            ytopborder = int(areaofinterest[1][1])
         if areaofinterest[2][1] > areaofinterest[3][1]:
-            ybottomborder = int(areaofinterest[2][1])*const.ir_image_size[1]/const.rgb_image_size[1]
+            ybottomborder = int(areaofinterest[2][1])
         else:
-            ybottomborder = int(areaofinterest[3][1])*const.ir_image_size[1]/const.rgb_image_size[1]
+            ybottomborder = int(areaofinterest[3][1])
+        cv2.imshow('frame',framegrey)
+        cv2.waitKey(0)
         sizevec = framegrey.shape
         framegrey[:,0:xleftborder] = 0
         framegrey[:,xrightborder:(sizevec[1]-1)] = 0
         framegrey[0:ytopborder,:] =0
         framegrey[ybottomborder:(sizevec[0]-1),:] = 0
+        cv2.imshow('frame',framegrey)
+        cv2.waitKey(0)
         frametherehold = np.zeros(framegrey.shape,dtype='uint8')
         frametherehold = cv2.threshold(framegrey,(255-a),255,cv2.THRESH_TOZERO_INV)
         frametherehold = frametherehold[1]
         #for area in const.NoDetectionArea:
          #   frametherehold[area[1]:area[1]+area[3],area[0]:area[0]+area[2]]=np.zeros((area[3],area[2]),dtype='uint8')
-        frametherehold= cv2.medianBlur(frametherehold,5)
+        #frametherehold= cv2.medianBlur(frametherehold,5)
         frametherehold = cv2.erode(frametherehold, None, iterations=2)
         frametherehold = cv2.dilate(frametherehold, None, iterations=4)
         if(show):
@@ -143,12 +149,14 @@ class Bildverarbeitung(object):
                 if(show):
                     cv2.imshow('newmask',maskf)
                     cv2.waitKey(0)
+                    cv2.imwrite(const.rootfolder+"/maskf.jpg",maskf)
                 numPixels = cv2.countNonZero(maskf)
-                if numPixels<20:
+                if numPixels<const.minpixelfornewdeptharea:
                      break
                 lowervalue=maskf.max()
                 k+=1
-            areawh.append(maskf)
+            if not numPixels < const.minpixelfornewdeptharea: 
+                areawh.append(maskf)
             i+=1
             area.append(areawh)
             listofdetectedobjectspixel=list()
@@ -169,13 +177,22 @@ class Bildverarbeitung(object):
                 if(show):
                     cv2.imshow('newarea',new_area)
                     cv2.waitKey(0)
-                #cv2.imwrite(const.rootfolder+"/newarea"+str(k)+".jpg",new_area)
+                cv2.imwrite(const.rootfolder+"/newarea"+str(k)+".jpg",new_area)
                 cnts = cv2.findContours(new_area.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
                 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
                 cnts = contours.sort_contours(cnts)[0]       
                 for (i, c) in enumerate(cnts):
-	                (x,y,w,h) = cv2.boundingRect(c)          
-                        listofdetectedobjectspixel.append(RectanglePixel(x,y,w,h,z))
+	                minarearect= cv2.minAreaRect(c)    
+                        print(minarearect)
+                        x=int(minarearect[0][0]-(0.5*minarearect[1][0]))
+                        y=int(minarearect[0][1]-(0.5*minarearect[1][1]))
+                        w=int(minarearect[1][0])
+                        h=int(minarearect[1][1])
+                        if minarearect[2] >= 0:
+                            angle= abs(minarearect[2])
+                        else:
+                            angle=(360+minarearect[2])
+                        listofdetectedobjectspixel.append(RectanglePixel(x,y,w,h,z,angle))
 
         return listofdetectedobjectspixel
 
