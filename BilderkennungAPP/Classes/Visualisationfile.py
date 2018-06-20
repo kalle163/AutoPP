@@ -329,6 +329,8 @@ class MyPanel(Screen):
         return
 
     def RGBBildpressed(self):
+        self.XMLWriter.deleteBlobObjects()
+        self.listofblobobjects = list()
         frame=self.cam.getpicturecolor()
         if len(self.listofblobobjects)>0:
             if self.showcheckbox.state =='down':
@@ -354,11 +356,12 @@ class MyPanel(Screen):
         self.imageto3D.ConvertQuadertoCoords(self.listofquaderkeypoints,self.XMLWriter,framemilli)
         return
     def HeightMapPressed(self):
+        self.XMLWriter.deleteDepthObjects()
         self.listofdetecteddepthobjects = list()
         framemilli,framegrey,self.g = self.cam.getpicturedepth()
-        texturegrey=self.workpic.DetphFrameToKivyPicture(framegrey)
-        self.bildschirm.Changetexture(texturegrey)
         self.listofdetecteddepthobjects = self.workpic.DetectionOfDepthObjects(framemilli,framegrey,self.g)
+        texturegrey=self.workpic.DetphFrameToKivyPicture()
+        self.bildschirm.Changetexture(texturegrey)
         self.imageto3D.load()
         self.imageto3D.ConvertPixQuadertoCoordQuader(self.listofdetecteddepthobjects,self.XMLWriter)
         return

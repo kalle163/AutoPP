@@ -24,24 +24,37 @@ class RectanglePixel(object):
 
 class Bildverarbeitung(object):
 
-    texturedepth = Texture.create(size=(512,424),colorfmt='bgr')
     def __init__(self, *args, **kwargs):
         return super(Bildverarbeitung, self).__init__(*args, **kwargs)
-    def DetphFrameToKivyPicture(self,depthframe):
+    def DetphFrameToKivyPicture(self):
+        depthframe = self.depthframe.copy()
+        caliresult = shelve.open(const.rootfolder+"\IRCalibrationResults")
+        area = caliresult['areaofinterest']
+        depthframe= depthframe[int(area[0][1]):int(area[2][1]),int(area[0][0]):int(area[1][0])]
         depthframe = cv2.flip(depthframe,0);
-        ircaliresult = shelve.open(const.rootfolder+"\IRCalibrationResults")
-        irarea = ircaliresult['areaofinterest'] 
-        #depthframe = depthframe.reshape(424*512)
         depthframe=cv2.cvtColor(depthframe,cv2.COLOR_GRAY2BGR)
-        depthframe = depthframe.reshape(424*512*3)
-        self.texturedepth.blit_buffer(depthframe,bufferfmt='ubyte',colorfmt='bgr')
-        ircaliresult.close()
-        return self.texturedepth
+        #depthframe = depthframe.reshape(424*512*3)
+        shp = depthframe.shape
+        if shp[0]*16/9 > shp[1]:
+            newlocaldepthframe= np.ones((shp[0],int(shp[0]*16/9),3),dtype=np.uint8)*255
+            newshp=newlocaldepthframe.shape
+            startmidle = (newshp[1]-shp[1])/2
+            newlocaldepthframe[0:shp[0],startmidle:shp[1]+startmidle,:]=depthframe
+        elif shp[1]*9/16 > shp[0]:
+            newlocaldepthframe= np.ones((int(shp[1]*9/16),shp[1],3),dtype=np.uint8)*255
+            newshp=newlocaldepthframe.shape
+            startmidle = (newshp[0]-shp[0])/2
+            newlocaldepthframe[startmidle:shp[0]+startmidle,0:shp[1],:]=depthframe
+        else:
+            newshp=shp   
+        newlocaldepthframe = newlocaldepthframe.reshape(np.prod(newshp))
+        texturedepth = Texture.create(size=(newshp[1],newshp[0]),colorfmt='bgr')
+        texturedepth.blit_buffer(newlocaldepthframe,bufferfmt='ubyte',colorfmt='bgr')
+        caliresult.close()
+        return texturedepth
     def ColorFrameToKivyPicture(self,colorframe):
         caliresult = shelve.open(const.rootfolder+"\CalibrationResults")
         area = caliresult['areaofinterest'] 
-        cv2.imshow("bla",colorframe)
-        cv2.waitKey(0)
         localcolorframe = colorframe[int(area[0][1]):int(area[2][1]),int(area[0][0]):int(area[1][0]),:]
         localcolorframe = cv2.flip(localcolorframe,0);
         shp = localcolorframe.shape
@@ -57,8 +70,6 @@ class Bildverarbeitung(object):
             newlocalcolorframe[startmidle:shp[0]+startmidle,0:shp[1],:]=localcolorframe
         else:
             newshp=shp
-        cv2.imshow("bla",newlocalcolorframe)
-        cv2.waitKey(0)
         newlocalcolorframe = newlocalcolorframe.reshape(np.prod(newshp))
         texturecolor = Texture.create(size=(newshp[1],newshp[0]),colorfmt='bgr')
         texturecolor.blit_buffer(newlocalcolorframe,bufferfmt='ubyte',colorfmt='bgr')
@@ -106,6 +117,7 @@ class Bildverarbeitung(object):
         framegrey[:,xrightborder:(sizevec[1]-1)] = 0
         framegrey[0:ytopborder,:] =0
         framegrey[ybottomborder:(sizevec[0]-1),:] = 0
+        self.depthframe = framegrey.copy()
         cv2.imshow('frame',framegrey)
         cv2.waitKey(0)
         frametherehold = np.zeros(framegrey.shape,dtype='uint8')
@@ -114,12 +126,12 @@ class Bildverarbeitung(object):
         #for area in const.NoDetectionArea:
          #   frametherehold[area[1]:area[1]+area[3],area[0]:area[0]+area[2]]=np.zeros((area[3],area[2]),dtype='uint8')
         #frametherehold= cv2.medianBlur(frametherehold,5)
-        frametherehold = cv2.erode(frametherehold, None, iterations=2)
-        frametherehold = cv2.dilate(frametherehold, None, iterations=4)
+        frametherehold = cv2.erode(frametherehold, None, iterations=1)
+        #frametherehold = cv2.dilate(frametherehold, None, iterations=4)
         if(show):
             cv2.imshow('frametherehold',frametherehold)
             cv2.waitKey(0)
-        #cv2.imwrite(const.rootfolder+"/thereholdframe.jpg",frametherehold)
+            cv2.imwrite(const.rootfolder+"/thereholdframe.jpg",frametherehold)
         mask=frametherehold.copy()
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[0] if imutils.is_cv2() else cnts[1]
@@ -184,34 +196,18 @@ class Bildverarbeitung(object):
                 for (i, c) in enumerate(cnts):
 	                minarearect= cv2.minAreaRect(c)    
                         print(minarearect)
-                        x=int(minarearect[0][0]-(0.5*minarearect[1][0]))
-                        y=int(minarearect[0][1]-(0.5*minarearect[1][1]))
+                        box = cv2.boxPoints(minarearect) 
+                        print(box)
+                        x=int(minarearect[0][0])
+                        y=int(minarearect[0][1])
                         w=int(minarearect[1][0])
                         h=int(minarearect[1][1])
-                        if minarearect[2] >= 0:
-                            angle= abs(minarearect[2])
-                        else:
-                            angle=(360+minarearect[2])
+                        print((x,y))
+                        angle=(90+minarearect[2])
                         listofdetectedobjectspixel.append(RectanglePixel(x,y,w,h,z,angle))
 
         return listofdetectedobjectspixel
 
-
-
-def find_squares(img):
-    contours, _hierarchy = find_contours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    for cnt in contours:
-        x, y, w, h = cv2.boundingRect(cnt)
-        cnt_len = cv2.arcLength(cnt, True)
-        cnt = cv2.approxPolyDP(cnt, 0.02*cnt_len, True)
-        area = cv2.contourArea(cnt)
-        if len(cnt) == 4  and cv2.isContourConvex(cnt):
-            cnt = cnt.reshape(-1, 2)
-            max_cos = np.max([angle_cos( cnt[i], cnt[(i+1) % 4], cnt[(i+2) % 4] ) for i in xrange(4)])
-            if max_cos < 0.1:
-                if (1 - (float(w) / float(h)) <= 0.07 and 1 - (float(h) / float(w)) <= 0.07):
-                    squares.append(cnt)
-    return squares 
 
     
 

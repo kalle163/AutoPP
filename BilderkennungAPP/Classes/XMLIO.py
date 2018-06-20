@@ -24,6 +24,13 @@ class XMLWriter(object):
         self.listofblobquader.append(quader)
         return
 
+    def deleteBlobObjects(self):
+        self.listofballs = list()
+        self.listofblobquader = list()
+      
+    def deleteDepthObjects(self):
+        self.listofquader = list()
+
 
     def deleteList(quader=True,balls=True):
         if quader:
